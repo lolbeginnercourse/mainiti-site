@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
   "name": "mainiti-site",
   "private": true,
@@ -26,22 +25,3 @@
     "vite": "^8.0.9"
   }
 }
-=======
-{  
-  "name": "my-app",  
-  "version": "1.0.0",  
-  "scripts": {  
-    "dev": "vite",  
-    "build": "vite build",  
-    "serve": "vite preview"  
-  },  
-  "dependencies": {  
-    "react": "^18.2.0",  
-    "react-dom": "^18.2.0"  
-  },  
-  "devDependencies": {  
-    "vite": "^4.0.0",  
-    "@vitejs/plugin-react": "^2.0.0"  
-  }  
-}
->>>>>>> 0ba5edc169ac4271570d0da8ffbf977e94412695
