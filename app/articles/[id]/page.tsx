@@ -1,32 +1,24 @@
 /* eslint-disable @next/next/no-img-element */
 
+import { cache } from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import {
+  getArticleBySlugOrId,
   getArticlePath,
   getArticles,
   getPublishedDate,
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
+import { getAmazonProductByAsin } from "@/src/libs/amazon";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: "https://mainitiwo.com/"
-  }
-};
-
-type SearchParamsValue = {
-  tag?: string;
-  q?: string;
-  page?: string;
-};
-
-type HomeProps = {
-  searchParams?: SearchParamsValue | Promise<SearchParamsValue>;
+type ArticlePageProps = {
+  params: { id: string } | Promise<{ id: string }>;
+  searchParams?: { draftKey?: string } | Promise<{ draftKey?: string }>;
 };
 
 type CmsCategoryObject = {
@@ -48,105 +40,413 @@ type CmsCategoryValue =
 type ArticleWithCmsAliases = Article & {
   description?: string;
   content?: string;
-  body?: string;
   category?: CmsCategoryValue;
   categories?: CmsCategoryValue;
   tags?: string[] | string;
   subTags?: string[] | string;
-  metaTitle?: string;
-  metaDescription?: string;
+  main_category?: CmsCategoryValue;
+  maincategory?: CmsCategoryValue;
+  noIndex?: boolean;
+  noindex?: boolean;
+  no_index?: boolean;
 };
 
-const ARTICLES_PER_PAGE = 8;
-
-const categorySlugMap: Record<MainCategory, string> = {
-  暮らし: "kurashi",
-  防災: "bousai",
-  家電: "kaden",
-  お金: "okane",
-  ライフスタイル: "lifestyle",
-  リラックス: "relax",
-  広告: "ad"
+type AmazonCardProps = {
+  asin?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  amazonUrl: string;
+  rakutenUrl?: string;
 };
 
-function getCategoryHref(category: MainCategory) {
-  return `/category/${categorySlugMap[category]}`;
+type HtmlBlockInput = {
+  type: "html";
+  html: string;
+};
+
+type AmazonBlockInput = {
+  type: "amazon-input";
+  key: string;
+  asin: string;
+  amazonUrlAttr: string;
+  rakutenUrl: string;
+  hasRakutenSetting: boolean;
+  titleAttr: string;
+  imageAttr: string;
+};
+
+type ArticleBlock =
+  | HtmlBlockInput
+  | {
+      type: "amazon";
+      key: string;
+      asin?: string;
+      title: string;
+      description?: string;
+      imageUrl?: string;
+      amazonUrl: string;
+      rakutenUrl?: string;
+      hasRakutenSetting?: boolean;
+    };
+
+type ArticleBlockInput = HtmlBlockInput | AmazonBlockInput;
+
+const SITE_URL = "https://mainitiwo.com";
+const DEFAULT_CATEGORY: MainCategory = "暮らし";
+
+const categoryConfig: Record<
+  MainCategory,
+  { color: string; background: string; href?: string }
+> = {
+  暮らし: {
+    color: "#C76A2A",
+    background: "linear-gradient(135deg,#FFF4E6,#F1D7B6,#E8BE86)",
+    href: "/?category=暮らし"
+  },
+  防災: {
+    color: "#3B6F9E",
+    background: "linear-gradient(135deg,#EAF3FA,#D8EAF6,#CFE3F2)",
+    href: "/?category=防災"
+  },
+  家電: {
+    color: "#64748B",
+    background: "linear-gradient(135deg,#F9FAFB,#E5E7EB,#D1D5DB)",
+    href: "/?category=家電"
+  },
+  お金: {
+    color: "#D08A24",
+    background: "linear-gradient(135deg,#FFF7ED,#F0D2A7,#E7B875)",
+    href: "/?category=お金"
+  },
+  ライフスタイル: {
+    color: "#7A9A75",
+    background: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
+    href: "/?category=ライフスタイル"
+  },
+  リラックス: {
+    color: "#6F9DB5",
+    background: "linear-gradient(135deg,#F0F8FA,#EAF3FA,#D6E9F2)",
+    href: "/?category=リラックス"
+  },
+  広告: {
+    color: "#B85C1E",
+    background: "linear-gradient(135deg,#FFF4E6,#F0E8D8,#EAF3FA)"
+  }
+};
+
+const categories = [
+  { name: "トップ", key: "top", href: "/" },
+  ...Object.entries(categoryConfig)
+    .filter(([, config]) => config.href)
+    .map(([name, config]) => ({
+      name,
+      key: name,
+      href: config.href || "/"
+    }))
+];
+
+const categoryNames = Object.keys(categoryConfig) as MainCategory[];
+const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
+const japaneseDateFormatter = new Intl.DateTimeFormat("ja-JP", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+});
+
+const shortcodeAttributeNames = {
+  amazonUrl: ["url", "amazonUrl", "amazon_url"],
+  rakutenUrl: ["rakutenUrl", "rakuten", "rakuten_url"],
+  title: ["title", "name"],
+  image: ["image", "imageUrl", "image_url"]
+};
+
+function getCategoryColor(category: MainCategory) {
+  return categoryConfig[category]?.color || categoryConfig[DEFAULT_CATEGORY].color;
 }
 
-const categories: Array<{ name: string; key: "top" | MainCategory; href: string }> = [
-  { name: "トップ", key: "top", href: "/" },
-  { name: "暮らし", key: "暮らし", href: getCategoryHref("暮らし") },
-  { name: "防災", key: "防災", href: getCategoryHref("防災") },
-  { name: "家電", key: "家電", href: getCategoryHref("家電") },
-  { name: "お金", key: "お金", href: getCategoryHref("お金") },
-  { name: "ライフスタイル", key: "ライフスタイル", href: getCategoryHref("ライフスタイル") },
-  { name: "リラックス", key: "リラックス", href: getCategoryHref("リラックス") }
-];
+function getCategoryBackground(category: MainCategory) {
+  return categoryConfig[category]?.background || categoryConfig[DEFAULT_CATEGORY].background;
+}
 
-const tagColor: Record<string, string> = {
-  暮らし: "#C76A2A",
-  防災: "#3B6F9E",
-  家電: "#64748B",
-  お金: "#D08A24",
-  ライフスタイル: "#7A9A75",
-  リラックス: "#6F9DB5",
-  広告: "#B85C1E"
-};
+function escapeHtmlAttribute(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-const categoryBackground: Record<string, string> = {
-  暮らし: "linear-gradient(135deg,#FFF4E6,#F1D7B6,#E8BE86)",
-  防災: "linear-gradient(135deg,#EAF3FA,#D8EAF6,#CFE3F2)",
-  家電: "linear-gradient(135deg,#F9FAFB,#E5E7EB,#D1D5DB)",
-  お金: "linear-gradient(135deg,#FFF7ED,#F0D2A7,#E7B875)",
-  ライフスタイル: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
-  リラックス: "linear-gradient(135deg,#F0F8FA,#EAF3FA,#D6E9F2)",
-  広告: "linear-gradient(135deg,#FFF4E6,#F0E8D8,#EAF3FA)"
-};
+function decodeAmazonShortcodeText(value: string) {
+  return value
+    .replaceAll("&nbsp;", " ")
+    .replaceAll("&amp;", "&")
+    .replaceAll("&#038;", "&")
+    .replaceAll("&#x26;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#34;", '"')
+    .replaceAll("&#x22;", '"')
+    .replaceAll("&#x2F;", "/")
+    .replaceAll("&colon;", ":")
+    .replaceAll("&#039;", "'")
+    .replaceAll("&apos;", "'")
+    .replaceAll("&equals;", "=")
+    .replaceAll("&#61;", "=")
+    .replaceAll("&quest;", "?")
+    .replaceAll("&#63;", "?")
+    .replaceAll("“", '"')
+    .replaceAll("”", '"')
+    .replaceAll("‘", "'")
+    .replaceAll("’", "'");
+}
 
-const categoryNames: MainCategory[] = [
-  "暮らし",
-  "防災",
-  "家電",
-  "お金",
-  "ライフスタイル",
-  "リラックス",
-  "広告"
-];
+function decodeEscapedA8TagText(value: string) {
+  return decodeAmazonShortcodeText(value)
+    .replace(/&lt;|&#60;|&#x3c;/gi, "<")
+    .replace(/&gt;|&#62;|&#x3e;/gi, ">")
+    .replace(/&quot;|&#34;|&#x22;/gi, '"')
+    .replace(/&#039;|&apos;/gi, "'");
+}
 
-const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
+function normalizeAmazonInput(value: string) {
+  return decodeAmazonShortcodeText(value).trim();
+}
 
-function formatDate(date?: string) {
-  if (!date) return "";
+function normalizeUrl(url: string) {
+  return decodeAmazonShortcodeText(url)
+    .trim()
+    .replace(/^["'“”]+|["'“”]+$/g, "")
+    .replaceAll("　", "")
+    .replace(/\s+/g, "");
+}
 
-  const parsedDate = new Date(date);
+function normalizeRakutenUrl(url: string) {
+  const normalized = normalizeUrl(url);
+  if (!normalized) return "";
 
-  if (Number.isNaN(parsedDate.getTime())) {
+  try {
+    return new URL(normalized).toString();
+  } catch {
+    return "";
+  }
+}
+
+function isValidExternalUrl(url?: string) {
+  if (!url) return false;
+
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function getShortcodeAttr(shortcode: string, name: string) {
+  const decodedShortcode = decodeAmazonShortcodeText(shortcode);
+  const pattern = new RegExp(
+    `${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|“([^”]*)”|([^\\s\\]]+))`,
+    "i"
+  );
+  const match = decodedShortcode.match(pattern);
+
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? match?.[4] ?? "";
+}
+
+function getFirstShortcodeAttr(shortcode: string, names: string[]) {
+  for (const name of names) {
+    const value = getShortcodeAttr(shortcode, name);
+    if (value) return value;
+  }
+
+  return "";
+}
+
+function getSafeA8Size(value: string, fallback: string) {
+  const normalized = value.replace(/[^\d]/g, "");
+  return normalized || fallback;
+}
+
+function normalizeA8ShortcodeForParsing(shortcode: string) {
+  return decodeEscapedA8TagText(shortcode)
+    .replace(/<a\b[^>]*href=(["'])(.*?)\1[^>]*>[\s\S]*?<\/a>/gi, "$2")
+    .replace(/<\/?[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildA8BannerHtml({
+  href,
+  img,
+  track,
+  width,
+  height,
+  alt
+}: {
+  href: string;
+  img: string;
+  track?: string;
+  width: string;
+  height: string;
+  alt?: string;
+}) {
+  if (!isValidExternalUrl(href) || !isValidExternalUrl(img)) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  })
-    .format(parsedDate)
-    .replaceAll("/", ".");
+  const safeHref = escapeHtmlAttribute(href);
+  const safeImg = escapeHtmlAttribute(img);
+  const safeTrack = escapeHtmlAttribute(track || "");
+  const safeAlt = escapeHtmlAttribute(alt || "");
+  const trackingImg = isValidExternalUrl(track)
+    ? `<img border="0" width="1" height="1" src="${safeTrack}" alt="">`
+    : "";
+
+  return `
+<div class="a8-banner-wrap">
+  <a href="${safeHref}" rel="nofollow sponsored noopener noreferrer" target="_blank">
+    <img border="0" width="${width}" height="${height}" alt="${safeAlt}" src="${safeImg}" loading="lazy">
+  </a>
+  ${trackingImg}
+</div>
+`;
+}
+
+function createA8HtmlFromShortcode(shortcode: string) {
+  const cleanShortcode = normalizeA8ShortcodeForParsing(shortcode);
+  const href = normalizeUrl(getFirstShortcodeAttr(cleanShortcode, ["href", "url", "link"]));
+  const img = normalizeUrl(
+    getFirstShortcodeAttr(cleanShortcode, ["img", "src", "image", "imageUrl", "image_url"])
+  );
+  const track = normalizeUrl(
+    getFirstShortcodeAttr(cleanShortcode, [
+      "track",
+      "tracking",
+      "pixel",
+      "trackingUrl",
+      "tracking_url"
+    ])
+  );
+  const width = getSafeA8Size(getShortcodeAttr(cleanShortcode, "width"), "468");
+  const height = getSafeA8Size(getShortcodeAttr(cleanShortcode, "height"), "60");
+  const alt = normalizeAmazonInput(getShortcodeAttr(cleanShortcode, "alt"));
+
+  return buildA8BannerHtml({ href, img, track, width, height, alt });
+}
+
+function createA8HtmlFromRawTag(rawHtml: string) {
+  const decodedHtml = decodeEscapedA8TagText(rawHtml);
+  const hrefMatch = decodedHtml.match(
+    /<a\b[^>]*href=(["'])(https?:\/\/px\.a8\.net\/[^"']+)\1[^>]*>/i
+  );
+  const imageMatches = Array.from(
+    decodedHtml.matchAll(/<img\b[^>]*src=(["'])(https?:\/\/[^"']+)\1[^>]*>/gi)
+  );
+  const bannerImage = imageMatches.find((match) => /\/svt\/bgt\?/i.test(match[2]));
+  const trackingImage = imageMatches.find((match) => /\/0\.gif\?/i.test(match[2]));
+  const bannerTag = bannerImage?.[0] || "";
+  const widthMatch = bannerTag.match(/width=(["'])(\d+)\1/i);
+  const heightMatch = bannerTag.match(/height=(["'])(\d+)\1/i);
+  const altMatch = bannerTag.match(/alt=(["'])(.*?)\1/i);
+
+  return buildA8BannerHtml({
+    href: normalizeUrl(hrefMatch?.[2] || ""),
+    img: normalizeUrl(bannerImage?.[2] || ""),
+    track: normalizeUrl(trackingImage?.[2] || ""),
+    width: getSafeA8Size(widthMatch?.[2] || "", "468"),
+    height: getSafeA8Size(heightMatch?.[2] || "", "60"),
+    alt: normalizeAmazonInput(altMatch?.[2] || "")
+  });
+}
+
+function normalizeA8ShortcodeText(value: string) {
+  return decodeAmazonShortcodeText(value)
+    .replace(/&#91;|&#x5b;|&lbrack;/gi, "[")
+    .replace(/&#93;|&#x5d;|&rbrack;/gi, "]");
+}
+
+function protectExistingA8Banners(html: string) {
+  const protectedBlocks: string[] = [];
+  const htmlWithPlaceholders = html.replace(
+    /<div\b[^>]*class=(["'])[^"']*\ba8-banner-wrap\b[^"']*\1[^>]*>[\s\S]*?<\/div>/gi,
+    (block) => {
+      const placeholder = `__A8_BANNER_BLOCK_${protectedBlocks.length}__`;
+      protectedBlocks.push(block);
+      return placeholder;
+    }
+  );
+
+  return {
+    htmlWithPlaceholders,
+    restore: (value: string) =>
+      protectedBlocks.reduce(
+        (restoredHtml, block, index) =>
+          restoredHtml.replace(`__A8_BANNER_BLOCK_${index}__`, block),
+        value
+      )
+  };
+}
+
+function replaceA8Shortcodes(html: string) {
+  const normalizedHtml = normalizeA8ShortcodeText(html);
+  const htmlWithA8Shortcodes = normalizedHtml.replace(
+    /(?:<p[^>]*>\s*)?(?:<[^>]+>\s*)*(\[a8\b[\s\S]*?\])\s*(?:<\/[^>]+>\s*)*(?:<\/p>)?/gi,
+    (match, shortcode) => createA8HtmlFromShortcode(shortcode) || match
+  );
+  const { htmlWithPlaceholders, restore } = protectExistingA8Banners(htmlWithA8Shortcodes);
+  const htmlWithActualA8Tags = htmlWithPlaceholders.replace(
+    /(?:<p[^>]*>\s*)?(<a\b[^>]*href=(["'])https?:\/\/px\.a8\.net\/[\s\S]*?<\/a>\s*<img\b[^>]*src=(["'])https?:\/\/[^"']*\/0\.gif\?[\s\S]*?>)\s*(?:<\/p>)?/gi,
+    (match, rawA8Html) => createA8HtmlFromRawTag(rawA8Html) || match
+  );
+  const htmlWithEscapedA8Tags = htmlWithActualA8Tags.replace(
+    /(?:<p[^>]*>\s*)?(&lt;a\b[\s\S]*?https?:\/\/px\.a8\.net\/[\s\S]*?&lt;\/a&gt;[\s\S]*?&lt;img\b[\s\S]*?https?:\/\/[^<]*\/0\.gif\?[\s\S]*?&gt;)\s*(?:<\/p>)?/gi,
+    (match, rawA8Html) => createA8HtmlFromRawTag(rawA8Html) || match
+  );
+
+  return restore(htmlWithEscapedA8Tags);
+}
+
+const getCachedArticleBySlugOrId = cache(async (id: string, draftKey?: string) => {
+  return (await getArticleBySlugOrId(id, draftKey)) as ArticleWithCmsAliases;
+});
+
+const getCachedArticles = cache(async () => {
+  return (await getArticles()) as ArticleWithCmsAliases[];
+});
+
+const getCachedAmazonProduct = cache(async (asinOrUrl: string) => {
+  try {
+    return await getAmazonProductByAsin(asinOrUrl);
+  } catch {
+    return null;
+  }
+});
+
+async function getRelatedArticlesSafely(
+  article: ArticleWithCmsAliases,
+  articleCategory: MainCategory
+) {
+  try {
+    const allArticles = await getCachedArticles();
+
+    return allArticles
+      .filter((item) => {
+        const itemCategory = getArticleCategory(item);
+        return !item.isAd && item.id !== article.id && itemCategory === articleCategory;
+      })
+      .slice(0, 3);
+  } catch {
+    return [];
+  }
 }
 
 function getCategoryTextCandidates(value: unknown): string[] {
   if (!value) return [];
-
-  if (Array.isArray(value)) {
-    return value.flatMap((item) => getCategoryTextCandidates(item));
-  }
-
-  if (typeof value === "string") {
-    return [value];
-  }
+  if (Array.isArray(value)) return value.flatMap((item) => getCategoryTextCandidates(item));
+  if (typeof value === "string") return [value];
 
   if (typeof value === "object") {
     const record = value as Record<string, unknown>;
-
     return [
       record.name,
       record.title,
@@ -161,25 +461,18 @@ function getCategoryTextCandidates(value: unknown): string[] {
   return [];
 }
 
-function normalizeCategoryValue(value: string) {
-  return value.replace(/^#/, "").trim();
-}
-
 function findArticleCategories(values: string[]): MainCategory[] {
   const foundCategories: MainCategory[] = [];
 
   for (const value of values) {
-    const cleanedValue = normalizeCategoryValue(value);
-
-    if (!cleanedValue) {
-      continue;
-    }
+    const cleanedValue = value.replace(/^#/, "").trim();
+    if (!cleanedValue) continue;
 
     for (const category of categoryNames) {
-      const isMatched =
-        cleanedValue === category || cleanedValue.includes(category);
-
-      if (isMatched && !foundCategories.includes(category)) {
+      if (
+        (cleanedValue === category || cleanedValue.includes(category)) &&
+        !foundCategories.includes(category)
+      ) {
         foundCategories.push(category);
       }
     }
@@ -190,29 +483,24 @@ function findArticleCategories(values: string[]): MainCategory[] {
 
 function getArticleCategories(article: ArticleWithCmsAliases): MainCategory[] {
   const articleRecord = article as Record<string, unknown>;
-
   const primaryValues = [
     articleRecord.category,
     articleRecord.categories,
     articleRecord.tags,
     articleRecord.subTags
   ].flatMap((value) => getCategoryTextCandidates(value));
-
   const primaryCategories = findArticleCategories(primaryValues);
 
-  if (primaryCategories.length > 0) {
-    return primaryCategories;
-  }
+  if (primaryCategories.length > 0) return primaryCategories;
 
   const fallbackValues = [
     articleRecord.mainCategory,
     articleRecord.main_category,
     articleRecord.maincategory
   ].flatMap((value) => getCategoryTextCandidates(value));
-
   const fallbackCategories = findArticleCategories(fallbackValues);
 
-  return fallbackCategories.length > 0 ? fallbackCategories : ["暮らし"];
+  return fallbackCategories.length > 0 ? fallbackCategories : [DEFAULT_CATEGORY];
 }
 
 function getArticleCategory(article: ArticleWithCmsAliases): MainCategory {
@@ -223,20 +511,8 @@ function getArticleSummary(article: ArticleWithCmsAliases) {
   return article.summary || article.description || "";
 }
 
-function getArticleBodyText(article: ArticleWithCmsAliases) {
+function getArticleBody(article: ArticleWithCmsAliases) {
   return article.body || article.content || "";
-}
-
-function stripHtml(value: string) {
-  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function getArticleImageUrl(article: ArticleWithCmsAliases) {
-  return article.eyecatch?.url || article.ogImage?.url || "";
-}
-
-function getArticleImageAlt(article: ArticleWithCmsAliases) {
-  return article.eyecatchAlt || article.title || "記事の見出し画像";
 }
 
 function getArticleTags(article: ArticleWithCmsAliases) {
@@ -248,256 +524,256 @@ function getArticleTags(article: ArticleWithCmsAliases) {
     .filter((tag) => tag && !hiddenTags.has(tag));
 }
 
-function uniqueTags(articles: ArticleWithCmsAliases[]) {
-  return Array.from(new Set(articles.flatMap((article) => getArticleTags(article)))).filter(Boolean);
+function formatDate(date?: string) {
+  if (!date) return "";
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return "";
+
+  return japaneseDateFormatter.format(parsedDate).replaceAll("/", ".");
 }
 
-function mergeUniqueArticles(
-  primaryArticles: ArticleWithCmsAliases[],
-  fallbackArticles: ArticleWithCmsAliases[]
-) {
-  const seen = new Set<string>();
+function sanitizeHtml(html: string) {
+  return (html || "")
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, "")
+    .replace(/javascript:/gi, "");
+}
 
-  return [...primaryArticles, ...fallbackArticles].filter((article) => {
-    if (seen.has(article.id)) return false;
-    seen.add(article.id);
-    return true;
+function extractHeadings(html: string) {
+  const matches = Array.from((html || "").matchAll(/<h2[^>]*>(.*?)<\/h2>/gi));
+
+  return matches.map((match, index) => ({
+    id: `section-${index + 1}`,
+    text: match[1].replace(/<[^>]+>/g, "").trim()
+  }));
+}
+
+function addHeadingIdsToSafeHtml(html: string) {
+  let index = 0;
+
+  return html.replace(/<h2([^>]*)>/gi, (_match, attrs) => {
+    index += 1;
+    const cleanedAttrs = String(attrs || "").replace(/\s+id=(["']).*?\1/gi, "");
+    return `<h2${cleanedAttrs} id="section-${index}">`;
   });
 }
 
-function normalizeSearchKeyword(value?: string) {
-  return (value || "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
+function extractRakutenUrlFromShortcode(shortcode: string) {
+  const decodedShortcode = decodeAmazonShortcodeText(shortcode);
+  const attrValue = getFirstShortcodeAttr(decodedShortcode, shortcodeAttributeNames.rakutenUrl);
+  const normalizedAttrValue = normalizeRakutenUrl(attrValue);
+
+  if (isValidExternalUrl(normalizedAttrValue)) return normalizedAttrValue;
+
+  const hrefMatch = decodedShortcode.match(/<a[^>]+href=["']([^"']*rakuten[^"']*)["']/i);
+  const normalizedHref = normalizeRakutenUrl(hrefMatch?.[1] || "");
+
+  if (isValidExternalUrl(normalizedHref)) return normalizedHref;
+
+  const urlMatch = decodedShortcode.match(
+    /(https?:\/\/(?:hb\.afl\.rakuten\.co\.jp|[^"' <>\]]*rakuten\.co\.jp)[^"' <>\]]*)/i
+  );
+  const normalizedUrl = normalizeRakutenUrl(urlMatch?.[1] || "");
+
+  return isValidExternalUrl(normalizedUrl) ? normalizedUrl : "";
 }
 
-function getSearchTerms(value: string) {
-  return normalizeSearchKeyword(value)
-    .split(" ")
-    .map((term) => term.trim())
-    .filter(Boolean);
+function isLikelyAsin(value?: string) {
+  return !!value && /^[A-Z0-9]{10}$/i.test(value);
 }
 
-function getArticleSearchText(article: ArticleWithCmsAliases) {
-  const categoriesText = getArticleCategories(article).join(" ");
-  const tagsText = getArticleTags(article).join(" ");
-  const summary = getArticleSummary(article);
-  const bodyText = stripHtml(getArticleBodyText(article));
-
-  return [
-    article.title,
-    article.metaTitle,
-    article.metaDescription,
-    summary,
-    categoriesText,
-    tagsText,
-    bodyText
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+function getAmazonFallbackImageUrl(asin?: string) {
+  if (!isLikelyAsin(asin)) return "";
+  return `https://images-na.ssl-images-amazon.com/images/P/${asin}.09.LZZZZZZZ.jpg`;
 }
 
-function articleMatchesSearch(article: ArticleWithCmsAliases, searchQuery: string) {
-  const terms = getSearchTerms(searchQuery);
+function getAmazonFallbackProductUrl(asin?: string, amazonUrlAttr?: string) {
+  if (amazonUrlAttr && isValidExternalUrl(amazonUrlAttr)) return amazonUrlAttr;
+  if (!isLikelyAsin(asin)) return "";
 
-  if (terms.length === 0) {
-    return true;
+  const partnerTag = process.env.AMAZON_PARTNER_TAG;
+  const tagQuery = partnerTag ? `?tag=${encodeURIComponent(partnerTag)}` : "";
+
+  return `https://www.amazon.co.jp/dp/${asin}${tagQuery}`;
+}
+
+function getShouldNoIndex(article: ArticleWithCmsAliases, draftKey?: string) {
+  return !!draftKey || !!article.noIndex || !!article.noindex || !!article.no_index;
+}
+
+function getCanonicalUrl(article: ArticleWithCmsAliases) {
+  try {
+    return new URL(getArticlePath(article), SITE_URL).toString();
+  } catch {
+    return SITE_URL;
   }
-
-  const searchText = getArticleSearchText(article);
-
-  return terms.every((term) => searchText.includes(term));
 }
 
-function parsePageNumber(value?: string) {
-  const parsed = Number(value);
+function parseArticleBlockInputs(html: string): ArticleBlockInput[] {
+  const blockInputs: ArticleBlockInput[] = [];
+  const decodedHtml = decodeAmazonShortcodeText(html);
+  const amazonRegex =
+    /(?:<p[^>]*>\s*)?(?:<[^>]+>\s*)*(\[amazon[\s\S]*?\])\s*(?:<\/[^>]+>\s*)*(?:<\/p>)?/gi;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
 
-  if (!Number.isFinite(parsed)) {
-    return 1;
-  }
+  while ((match = amazonRegex.exec(decodedHtml)) !== null) {
+    const beforeHtml = decodedHtml.slice(lastIndex, match.index);
+    if (beforeHtml) blockInputs.push({ type: "html", html: beforeHtml });
 
-  return Math.max(1, Math.floor(parsed));
-}
+    const shortcode = match[1] || "";
+    const asin = normalizeAmazonInput(getShortcodeAttr(shortcode, "asin"));
+    const amazonUrlAttr = normalizeUrl(
+      getFirstShortcodeAttr(shortcode, shortcodeAttributeNames.amazonUrl)
+    );
+    const rawRakutenUrl = getFirstShortcodeAttr(
+      shortcode,
+      shortcodeAttributeNames.rakutenUrl
+    );
+    const rakutenUrl = extractRakutenUrlFromShortcode(shortcode);
+    const hasRakutenSetting = /rakuten/i.test(shortcode) || !!rawRakutenUrl || !!rakutenUrl;
+    const titleAttr = normalizeAmazonInput(
+      getFirstShortcodeAttr(shortcode, shortcodeAttributeNames.title)
+    );
+    const imageAttr = normalizeUrl(getFirstShortcodeAttr(shortcode, shortcodeAttributeNames.image));
+    const asinOrUrl = asin || amazonUrlAttr;
 
-function clampPage(page: number, totalPages: number) {
-  return Math.min(Math.max(page, 1), Math.max(totalPages, 1));
-}
-
-function buildListHref({
-  tag,
-  q,
-  page
-}: {
-  tag?: string;
-  q?: string;
-  page?: number;
-}) {
-  const params = new URLSearchParams();
-
-  if (tag) {
-    params.set("tag", tag);
-  }
-
-  if (q) {
-    params.set("q", q);
-  }
-
-  if (page && page > 1) {
-    params.set("page", String(page));
-  }
-
-  const query = params.toString();
-
-  return query ? `/?${query}` : "/";
-}
-
-function getPaginationPages(currentPage: number, totalPages: number) {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  const pages = new Set<number>([1, totalPages]);
-
-  for (let page = currentPage - 2; page <= currentPage + 2; page += 1) {
-    if (page >= 1 && page <= totalPages) {
-      pages.add(page);
+    if (asinOrUrl) {
+      blockInputs.push({
+        type: "amazon-input",
+        key: `${asinOrUrl}-${match.index}`,
+        asin,
+        amazonUrlAttr,
+        rakutenUrl,
+        hasRakutenSetting,
+        titleAttr,
+        imageAttr
+      });
     }
+
+    lastIndex = amazonRegex.lastIndex;
   }
 
-  return Array.from(pages).sort((a, b) => a - b);
+  const afterHtml = decodedHtml.slice(lastIndex);
+  if (afterHtml) blockInputs.push({ type: "html", html: afterHtml });
+
+  return blockInputs;
 }
 
-function SearchBox({
-  selectedTag,
-  searchQuery
-}: {
-  selectedTag?: string;
-  searchQuery?: string;
-}) {
+async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock | null> {
+  const asinOrUrl = input.asin || input.amazonUrlAttr;
+  if (!asinOrUrl) return null;
+
+  try {
+    const product = await getCachedAmazonProduct(asinOrUrl);
+    const productAsin = product?.asin || input.asin;
+    const amazonUrl =
+      product?.detailPageURL || getAmazonFallbackProductUrl(productAsin, input.amazonUrlAttr);
+
+    if (!amazonUrl) return null;
+
+    return {
+      type: "amazon",
+      key: input.key,
+      asin: productAsin,
+      title: product?.title || input.titleAttr || "Amazonで商品を見る",
+      description: "価格や在庫状況は各販売ページで確認してください",
+      imageUrl: product?.imageUrl || input.imageAttr || getAmazonFallbackImageUrl(productAsin),
+      amazonUrl,
+      rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
+      hasRakutenSetting: input.hasRakutenSetting
+    };
+  } catch {
+    const fallbackAsin = isLikelyAsin(input.asin) ? input.asin : undefined;
+    const fallbackAmazonUrl = getAmazonFallbackProductUrl(fallbackAsin, input.amazonUrlAttr);
+
+    if (!fallbackAmazonUrl) return null;
+
+    return {
+      type: "amazon",
+      key: input.key,
+      asin: fallbackAsin,
+      title: input.titleAttr || "Amazonで商品を見る",
+      description: "価格や在庫状況は各販売ページで確認してください",
+      imageUrl: input.imageAttr || getAmazonFallbackImageUrl(fallbackAsin),
+      amazonUrl: fallbackAmazonUrl,
+      rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
+      hasRakutenSetting: input.hasRakutenSetting
+    };
+  }
+}
+
+async function createArticleBlocks(html: string): Promise<ArticleBlock[]> {
+  const blockInputs = parseArticleBlockInputs(html);
+  const resolvedBlocks = await Promise.all(
+    blockInputs.map((blockInput) =>
+      blockInput.type === "html" ? blockInput : resolveAmazonBlock(blockInput)
+    )
+  );
+
+  return resolvedBlocks.filter((block): block is ArticleBlock => !!block);
+}
+
+function AmazonCard({ asin, title, description, imageUrl, amazonUrl, rakutenUrl }: AmazonCardProps) {
+  const displayImageUrl = imageUrl || getAmazonFallbackImageUrl(asin);
+  const safeRakutenUrl = isValidExternalUrl(rakutenUrl) ? rakutenUrl : "";
+  const shouldShowRakutenArea = !!safeRakutenUrl;
+
   return (
-    <form className="search-box" action="/" method="get">
-      {selectedTag ? <input type="hidden" name="tag" value={selectedTag} /> : null}
+    <div className="product-card">
+      <a
+        className="product-image-area"
+        href={amazonUrl}
+        target="_blank"
+        rel="nofollow sponsored noopener noreferrer"
+        aria-label="Amazonで商品を見る"
+      >
+        {displayImageUrl ? (
+          <img src={displayImageUrl} alt={title} className="product-image" loading="lazy" />
+        ) : (
+          <span className="product-image-placeholder">商品画像</span>
+        )}
+      </a>
 
-      <div className="search-input-wrap">
-        <input
-          className="search-input"
-          type="search"
-          name="q"
-          defaultValue={searchQuery || ""}
-          placeholder="キーワードで記事を探す"
-          aria-label="キーワードで記事を探す"
-        />
-        <button className="search-button" type="submit">
-          検索
-        </button>
-      </div>
+      <div className="product-body">
+        <p className="product-kicker">商品リンク</p>
+        <div className="product-title">{title}</div>
 
-      {searchQuery ? (
-        <Link
-          className="search-clear"
-          href={buildListHref({
-            tag: selectedTag
-          })}
+        <div
+          className={
+            shouldShowRakutenArea ? "product-button-wrap has-rakuten" : "product-button-wrap"
+          }
         >
-          検索を解除
-        </Link>
-      ) : null}
-    </form>
+          <a
+            className="product-button amazon-button"
+            href={amazonUrl}
+            target="_blank"
+            rel="nofollow sponsored noopener noreferrer"
+          >
+            Amazonで見る
+          </a>
+
+          {safeRakutenUrl ? (
+            <a
+              className="product-button rakuten-button"
+              href={safeRakutenUrl}
+              target="_blank"
+              rel="nofollow sponsored noopener noreferrer"
+            >
+              楽天市場で見る
+            </a>
+          ) : null}
+        </div>
+
+        {description ? <p className="product-note">{description}</p> : null}
+      </div>
+    </div>
   );
 }
 
-function Pagination({
-  currentPage,
-  totalPages,
-  selectedTag,
-  searchQuery
-}: {
-  currentPage: number;
-  totalPages: number;
-  selectedTag?: string;
-  searchQuery?: string;
-}) {
-  if (totalPages <= 1) {
-    return null;
-  }
-
-  const pages = getPaginationPages(currentPage, totalPages);
-
-  return (
-    <nav className="pagination" aria-label="記事一覧のページ移動">
-      {currentPage > 1 ? (
-        <Link
-          className="pagination-link pagination-prev"
-          href={buildListHref({
-            tag: selectedTag,
-            q: searchQuery,
-            page: currentPage - 1
-          })}
-          aria-label="前のページへ移動"
-        >
-          ← 前のページ
-        </Link>
-      ) : (
-        <span className="pagination-link pagination-prev disabled">← 前のページ</span>
-      )}
-
-      <div className="pagination-status" aria-live="polite">
-        {currentPage} / {totalPages}ページ
-      </div>
-
-      <div className="pagination-numbers">
-        {pages.map((page, index) => {
-          const previousPage = pages[index - 1];
-          const shouldShowDots = previousPage && page - previousPage > 1;
-
-          return (
-            <span key={page} className="pagination-number-group">
-              {shouldShowDots ? <span className="pagination-dots">…</span> : null}
-
-              {page === currentPage ? (
-                <span className="pagination-number active" aria-current="page">
-                  {page}
-                </span>
-              ) : (
-                <Link
-                  className="pagination-number"
-                  href={buildListHref({
-                    tag: selectedTag,
-                    q: searchQuery,
-                    page
-                  })}
-                  aria-label={`${page}ページ目へ移動`}
-                >
-                  {page}
-                </Link>
-              )}
-            </span>
-          );
-        })}
-      </div>
-
-      {currentPage < totalPages ? (
-        <Link
-          className="pagination-link pagination-next"
-          href={buildListHref({
-            tag: selectedTag,
-            q: searchQuery,
-            page: currentPage + 1
-          })}
-          aria-label="次のページへ移動"
-        >
-          次のページ →
-        </Link>
-      ) : (
-        <span className="pagination-link pagination-next disabled">次のページ →</span>
-      )}
-    </nav>
-  );
-}
-
-function SiteHeader({ activeCategory }: { activeCategory?: string }) {
+function SiteHeader() {
   return (
     <>
       <header className="site-header">
@@ -505,23 +781,17 @@ function SiteHeader({ activeCategory }: { activeCategory?: string }) {
         <div className="decor-band bottom" />
         <div className="title-wrap">
           <div className="site-badge">家庭の実用メディア</div>
-          <h1 className="site-title">毎日を楽に生きる</h1>
-          <p className="site-subtitle">家のことを少しラクにする、家事・防災・家電・お金の整理帖</p>
+          <div className="site-title">毎日を楽に生きる</div>
+          <p className="site-subtitle">
+            家のことを少しラクにする、家事・防災・家電・お金の整理帖
+          </p>
         </div>
       </header>
 
       <nav className="nav">
         <div className="nav-list">
           {categories.map((category) => (
-            <Link
-              key={category.key}
-              href={category.href}
-              className={
-                activeCategory === category.key || (!activeCategory && category.key === "top")
-                  ? "nav-item active"
-                  : "nav-item"
-              }
-            >
+            <Link key={category.key} href={category.href} className="nav-item">
               {category.name}
             </Link>
           ))}
@@ -533,18 +803,18 @@ function SiteHeader({ activeCategory }: { activeCategory?: string }) {
 
 function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
   const category = getArticleCategory(article);
-  const accent = tagColor[category] || "#C76A2A";
-  const fallbackBackground = categoryBackground[category] || categoryBackground["暮らし"];
-  const imageUrl = getArticleImageUrl(article);
+  const accent = getCategoryColor(category);
+  const fallbackBackground = getCategoryBackground(category);
 
-  if (imageUrl) {
+  if (article.eyecatch?.url) {
     return (
       <div className="visual-box">
         <img
           className="visual-image"
-          src={imageUrl}
-          alt={getArticleImageAlt(article)}
-          loading="lazy"
+          src={article.eyecatch.url}
+          alt={article.eyecatchAlt || article.title}
+          fetchPriority="high"
+          decoding="async"
         />
       </div>
     );
@@ -560,235 +830,6 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
       <div className="table-shape" />
       <div className="cup-shape" />
       <div className="soft-orb" />
-    </div>
-  );
-}
-
-function ArticleThumb({
-  article,
-  className
-}: {
-  article: ArticleWithCmsAliases;
-  className: string;
-}) {
-  const category = getArticleCategory(article);
-  const imageUrl = getArticleImageUrl(article);
-  const fallbackBackground = categoryBackground[category] || categoryBackground["暮らし"];
-
-  if (imageUrl) {
-    return (
-      <div className={`${className} article-thumb has-image`}>
-        <img
-          src={imageUrl}
-          alt={getArticleImageAlt(article)}
-          className="article-thumb-image"
-          loading="lazy"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`${className} article-thumb thumb-fallback`}
-      style={{ background: fallbackBackground }}
-      aria-label={`${category}の記事`}
-    >
-      <span>{category}</span>
-    </div>
-  );
-}
-
-function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
-  const category = getArticleCategory(article);
-  const summary = getArticleSummary(article);
-  const tags = getArticleTags(article);
-  const articlePath = getArticlePath(article);
-
-  return (
-    <article className="card">
-      <Link href={articlePath} className="card-link" aria-label={`${article.title}を読む`}>
-        <div style={{ position: "relative" }}>
-          <VisualBox article={article} />
-          <span className="tag" style={{ background: tagColor[category] || "#B85C1E" }}>
-            {category}
-          </span>
-        </div>
-
-        <div className="card-body">
-          <div className="card-title">{article.title}</div>
-          {summary ? <div className="card-summary">{summary}</div> : null}
-        </div>
-
-        <div className="card-footer-area">
-          {tags.length > 0 ? (
-            <div className="sub-tags" aria-hidden="true">
-              {tags.slice(0, 2).map((subTag) => (
-                <span key={subTag} className="sub-tag">
-                  #{subTag}
-                </span>
-              ))}
-            </div>
-          ) : null}
-
-          <span className="read-more">記事を読む →</span>
-          <div className="date">{formatDate(getPublishedDate(article))}</div>
-        </div>
-      </Link>
-    </article>
-  );
-}
-function InlineAd({ article }: { article?: ArticleWithCmsAliases }) {
-  if (!article) return null;
-
-  return (
-    <Link className="inline-ad-card" href={getArticlePath(article)}>
-      <ArticleThumb article={article} className="inline-ad-thumb" />
-      <div className="inline-ad-content">
-        <div className="inline-ad-label">{article.adLabel || "暮らしのおすすめ"}</div>
-        <div className="inline-ad-title">{article.title}</div>
-        <div className="inline-ad-text">{getArticleSummary(article)}</div>
-      </div>
-    </Link>
-  );
-}
-
-function Sidebar({
-  popularArticles,
-  recommendedArticles,
-  adArticle,
-  allTags
-}: {
-  popularArticles: ArticleWithCmsAliases[];
-  recommendedArticles: ArticleWithCmsAliases[];
-  adArticle?: ArticleWithCmsAliases;
-  allTags: string[];
-}) {
-  const topicTags = allTags.slice(0, 8);
-  const fallbackCategories = categories.filter((category) => category.key !== "top").slice(0, 6);
-
-  return (
-    <aside>
-      <div className="sidebar-stack">
-        <div className="ranking">
-          <h3>よく読まれている記事</h3>
-
-          {popularArticles.slice(0, 3).map((article, index) => {
-            const summary = getArticleSummary(article);
-            const rankColors = ["#B85C1E", "#C76A2A", "#7A9A75"];
-
-            return (
-              <Link key={article.id} className="rank-item clickable-row" href={getArticlePath(article)}>
-                <div className="rank-num" style={{ background: rankColors[index] || "#B85C1E" }}>
-                  {index + 1}
-                </div>
-
-                <ArticleThumb article={article} className="rank-thumb" />
-
-                <div className="rank-content">
-                  <div className="rank-title">{article.title}</div>
-                  {summary ? <div className="rank-summary">{summary}</div> : null}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {adArticle ? (
-          <div className="side-card ad-box">
-            <ArticleThumb article={adArticle} className="side-ad-thumb" />
-            <div>
-              <div className="ad-label">{adArticle.adLabel || "暮らしのおすすめ"}</div>
-              <div className="ad-title">{adArticle.title}</div>
-              <div className="ad-text">{getArticleSummary(adArticle)}</div>
-            </div>
-            <Link className="ad-button" href={getArticlePath(adArticle)}>
-              {adArticle.adButtonText || "詳しく見る"}
-            </Link>
-          </div>
-        ) : null}
-
-        <div className="side-card">
-          <h3>目的別に探す</h3>
-
-          {topicTags.length > 0 ? (
-            <div className="tag-cloud">
-              {topicTags.map((subTag) => (
-                <Link key={subTag} className="tag-cloud-button" href={`/?tag=${encodeURIComponent(subTag)}`}>
-                  {subTag}
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="tag-cloud">
-              {fallbackCategories.map((category) => (
-                <Link key={category.key} className="tag-cloud-button" href={category.href}>
-                  {category.name}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="side-card">
-          <h3>次に読むなら</h3>
-          <div className="recommend-list">
-            {recommendedArticles.slice(0, 3).map((article) => {
-              const category = getArticleCategory(article);
-              const summary = getArticleSummary(article);
-
-              return (
-                <Link key={article.id} className="recommend-item clickable-row" href={getArticlePath(article)}>
-                  <ArticleThumb article={article} className="recommend-thumb" />
-
-                  <div className="recommend-content">
-                    <div className="recommend-tag" style={{ color: tagColor[category] }}>
-                      {category}
-                    </div>
-                    <div className="recommend-title">{article.title}</div>
-                    {summary ? <div className="recommend-summary">{summary}</div> : null}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="side-card">
-          <h3>注目テーマ</h3>
-          <div className="feature-list">
-            {(topicTags.length ? topicTags.slice(0, 3) : ["防災", "家電", "お金"]).map((tag, index) => (
-              <Link
-                key={tag}
-                className="feature-item clickable-row"
-                href={
-                  categoryNames.includes(tag as MainCategory)
-                    ? getCategoryHref(tag as MainCategory)
-                    : `/?tag=${encodeURIComponent(tag)}`
-                }
-              >
-                <div className="feature-dot" style={{ background: ["#3B6F9E", "#64748B", "#D08A24"][index] }} />
-                <div>
-                  <div className="feature-title">{tag}</div>
-                  <div className="feature-text">関連記事をチェック</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="empty-state">
-      <h3>該当する記事はまだありません</h3>
-      <p>別のタグや検索ワードで記事を探してみてください。</p>
-      <Link href="/" className="read-more">
-        トップへ戻る
-      </Link>
     </div>
   );
 }
@@ -814,136 +855,202 @@ function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">© 毎日を楽に生きる</div>
     </footer>
   );
 }
 
-export default async function Home({ searchParams }: HomeProps) {
-  const params = await Promise.resolve(searchParams || {});
-  const selectedTag = params.tag?.trim() || undefined;
-  const searchQuery = params.q?.trim() || "";
-  const requestedPage = parsePageNumber(params.page);
+export async function generateStaticParams() {
+  return [];
+}
 
-  let articles: ArticleWithCmsAliases[] = [];
+export async function generateMetadata({ params, searchParams }: ArticlePageProps) {
+  const resolvedParams = await Promise.resolve(params);
+  const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : undefined;
+  const draftKey = resolvedSearchParams?.draftKey;
 
   try {
-    articles = (await getArticles()) as ArticleWithCmsAliases[];
+    const article = await getCachedArticleBySlugOrId(resolvedParams.id, draftKey);
+    const title = article.metaTitle || `${article.title}｜毎日を楽に生きる`;
+    const description = article.metaDescription || getArticleSummary(article);
+    const image = article.ogImage?.url || article.eyecatch?.url;
+    const shouldNoIndex = getShouldNoIndex(article, draftKey);
+    const canonicalUrl = getCanonicalUrl(article);
+
+    return {
+      title,
+      description,
+      robots: shouldNoIndex
+        ? { index: false, follow: false }
+        : { index: true, follow: true },
+      alternates: {
+        canonical: canonicalUrl
+      },
+      openGraph: {
+        title,
+        description,
+        url: canonicalUrl,
+        images: image ? [image] : []
+      }
+    };
   } catch {
-    articles = [];
+    return {
+      title: "記事が見つかりません｜毎日を楽に生きる",
+      robots: {
+        index: false,
+        follow: false
+      }
+    };
+  }
+}
+
+export default async function ArticleDetailPage({ params, searchParams }: ArticlePageProps) {
+  const resolvedParams = await Promise.resolve(params);
+  const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : undefined;
+  const draftKey = resolvedSearchParams?.draftKey;
+  let article: ArticleWithCmsAliases;
+
+  try {
+    article = await getCachedArticleBySlugOrId(resolvedParams.id, draftKey);
+  } catch {
+    notFound();
   }
 
-  const normalArticles = articles.filter((article) => !article.isAd);
-  const adArticles = articles.filter((article) => article.isAd);
-  const allTags = uniqueTags(normalArticles);
-
-  const popularFiltered = normalArticles.filter((article) => article.isPopular);
-  const recommendedFiltered = normalArticles.filter((article) => article.isRecommended);
-
-  const popularArticles = mergeUniqueArticles(popularFiltered, normalArticles).slice(0, 3);
-  const popularArticleIds = new Set(popularArticles.map((article) => article.id));
-
-  const recommendedWithoutPopular = mergeUniqueArticles(
-    recommendedFiltered.filter((article) => !popularArticleIds.has(article.id)),
-    normalArticles.filter((article) => !popularArticleIds.has(article.id))
-  );
-
-  const recommendedArticles =
-    recommendedWithoutPopular.length > 0
-      ? recommendedWithoutPopular.slice(0, 3)
-      : normalArticles.slice(0, 3);
-
-  const visibleArticles = normalArticles.filter((article) => {
-    const tags = getArticleTags(article);
-
-    if (selectedTag && !tags.includes(selectedTag)) return false;
-    if (searchQuery && !articleMatchesSearch(article, searchQuery)) return false;
-
-    return true;
-  });
-
-  const totalArticles = visibleArticles.length;
-  const totalPages = Math.max(1, Math.ceil(totalArticles / ARTICLES_PER_PAGE));
-  const currentPage = clampPage(requestedPage, totalPages);
-  const startIndex = (currentPage - 1) * ARTICLES_PER_PAGE;
-  const pagedArticles = visibleArticles.slice(startIndex, startIndex + ARTICLES_PER_PAGE);
-
-  const mainCards = pagedArticles.slice(0, 4);
-  const newCards = pagedArticles.slice(4, 8);
-  const inlineAdArticle = adArticles[0];
-  const sideAdArticle = adArticles[1] || adArticles[0];
-
-  const title = searchQuery
-    ? `「${searchQuery}」の検索結果`
-    : selectedTag
-      ? `${selectedTag}の記事`
-      : "おすすめ記事";
-
-  const note = searchQuery
-    ? `${totalArticles}件の記事が見つかりました`
-    : selectedTag
-      ? "目的に近いテーマで絞り込んだ記事一覧です"
-      : "家の中の小さな不便や、毎日の負担を減らす記事をまとめています";
+  const articleCategory = getArticleCategory(article);
+  const safeBody = sanitizeHtml(getArticleBody(article));
+  const tocItems = extractHeadings(safeBody);
+  const articleSummary = getArticleSummary(article);
+  const articleTags = getArticleTags(article);
+  const bodyWithHeadingIds = addHeadingIdsToSafeHtml(safeBody);
+  const bodyWithA8 = replaceA8Shortcodes(bodyWithHeadingIds);
+  const [articleBlocks, relatedArticles] = await Promise.all([
+    createArticleBlocks(bodyWithA8),
+    getRelatedArticlesSafely(article, articleCategory)
+  ]);
 
   return (
     <div className="page">
       <SiteHeader />
 
-      <main className="container">
-        <div className="layout">
-          <section>
-            <h2 className="section-title">{title}</h2>
-            <p className="page-note">{note}</p>
-            <div className="list-status">
-              <span>{totalArticles}件の記事</span>
-              <span>{currentPage} / {totalPages}ページ</span>
+      <main className="article-page">
+        <Link className="back-button" href="/">
+          ← 一覧へ戻る
+        </Link>
+
+        <article className="article-card">
+          <div className="article-hero" style={{ position: "relative" }}>
+            <VisualBox article={article} />
+            <span className="tag" style={{ background: getCategoryColor(articleCategory) }}>
+              {articleCategory}
+            </span>
+          </div>
+
+          <div className="article-content">
+            <div className="date">{formatDate(getPublishedDate(article))}</div>
+            <h1 className="article-title">{article.title}</h1>
+
+            {articleSummary ? <p className="article-summary">{articleSummary}</p> : null}
+
+            {tocItems.length > 0 ? (
+              <div className="article-points">
+                <p className="article-points-title">この記事でわかること</p>
+                <ul className="article-points-list">
+                  {tocItems.slice(0, 3).map((item) => (
+                    <li key={`point-${item.id}`}>{item.text}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {articleTags.length > 0 ? (
+              <div className="sub-tags">
+                {articleTags.map((subTag) => (
+                  <Link
+                    key={subTag}
+                    className="sub-tag"
+                    href={`/?tag=${encodeURIComponent(subTag)}`}
+                  >
+                    #{subTag}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+
+            {tocItems.length > 0 ? (
+              <div className="toc-box">
+                <h2 className="toc-title">目次</h2>
+                <ul className="toc-list">
+                  {tocItems.map((item, index) => (
+                    <li key={item.id}>
+                      <a className="toc-button" href={`#${item.id}`}>
+                        <span className="toc-number">{index + 1}</span>
+                        <span>{item.text}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <div className="article-body">
+              {articleBlocks.map((block, index) => {
+                if (block.type === "html") {
+                  return (
+                    <div
+                      key={`html-${index}`}
+                      dangerouslySetInnerHTML={{ __html: block.html }}
+                    />
+                  );
+                }
+
+                return (
+                  <AmazonCard
+                    key={block.key}
+                    asin={block.asin}
+                    title={block.title}
+                    description={block.description}
+                    imageUrl={block.imageUrl}
+                    amazonUrl={block.amazonUrl}
+                    rakutenUrl={block.rakutenUrl}
+                  />
+                );
+              })}
             </div>
 
-            <SearchBox
-              selectedTag={selectedTag}
-              searchQuery={searchQuery}
-            />
+            {relatedArticles.length > 0 ? (
+              <div className="related-box">
+                <h2 className="related-title">関連記事</h2>
+                <div className="related-list">
+                  {relatedArticles.map((relatedArticle) => {
+                    const relatedCategory = getArticleCategory(relatedArticle);
 
-            {visibleArticles.length > 0 ? (
-              <>
-                <div className="cards">
-                  {mainCards.map((article) => (
-                    <ArticleCard key={article.id} article={article} />
-                  ))}
-
-                  {pagedArticles.length > 4 ? <InlineAd article={inlineAdArticle} /> : null}
+                    return (
+                      <Link
+                        key={relatedArticle.id}
+                        className="related-item"
+                        href={getArticlePath(relatedArticle)}
+                      >
+                        <span className="related-tag">{relatedCategory}</span>
+                        <div className="related-name">{relatedArticle.title}</div>
+                      </Link>
+                    );
+                  })}
                 </div>
+              </div>
+            ) : null}
 
-                {newCards.length > 0 ? (
-                  <>
-                    <h2 className="section-title sub">新着記事</h2>
-                    <div className="cards">
-                      {newCards.map((article) => (
-                        <ArticleCard key={article.id} article={article} />
-                      ))}
-                    </div>
-                  </>
-                ) : null}
-
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  selectedTag={selectedTag}
-                  searchQuery={searchQuery}
-                />
-              </>
-            ) : (
-              <EmptyState />
-            )}
-          </section>
-
-          <Sidebar
-            popularArticles={popularArticles}
-            recommendedArticles={recommendedArticles}
-            adArticle={sideAdArticle}
-            allTags={allTags}
-          />
-        </div>
+            <div className="article-bottom-nav">
+              <Link className="bottom-nav-button primary" href="/">
+                一覧へ戻る
+              </Link>
+              <Link
+                className="bottom-nav-button"
+                href={`/?category=${encodeURIComponent(articleCategory)}`}
+              >
+                {articleCategory}の記事を見る
+              </Link>
+            </div>
+          </div>
+        </article>
       </main>
 
       <SiteFooter />
