@@ -38,6 +38,7 @@ export type Article = {
 
   summary?: string;
   body?: string;
+  content?: string;
 
   mainCategory?: MainCategory;
   category?: MicroCMSCategoryValue;
@@ -211,5 +212,12 @@ export function getArticleImageAlt(article: Article) {
 }
 
 export function getArticleSummary(article: Article) {
-  return article.summary || "";
+  const source = article.summary || article.content || article.body || "";
+  const text = source.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  if (text.length <= 90) {
+    return text;
+  }
+
+  return `${text.slice(0, 90)}...`;
 }

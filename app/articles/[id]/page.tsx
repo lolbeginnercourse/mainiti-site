@@ -533,11 +533,25 @@ function getArticleCategory(article: ArticleWithCmsAliases): MainCategory {
 }
 
 function getArticleSummary(article: ArticleWithCmsAliases) {
-  return article.summary || article.description || "";
+  return article.summary || article.description || createExcerpt(getArticleBody(article), 120);
 }
 
 function getArticleBody(article: ArticleWithCmsAliases) {
   return article.body || article.content || "";
+}
+
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function createExcerpt(value: string, maxLength = 120) {
+  const text = stripHtml(value);
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength)}...`;
 }
 
 function getArticleTags(article: ArticleWithCmsAliases) {

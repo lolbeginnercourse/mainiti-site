@@ -280,16 +280,26 @@ function getArticleCategory(article: ArticleWithCmsAliases): MainCategory {
   return getArticleCategories(article)[0];
 }
 
-function getArticleSummary(article: ArticleWithCmsAliases) {
-  return article.summary || article.description || "";
-}
-
 function getArticleBodyText(article: ArticleWithCmsAliases) {
   return article.body || article.content || "";
 }
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function createExcerpt(value: string, maxLength = 90) {
+  const text = stripHtml(value);
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength)}...`;
+}
+
+function getArticleSummary(article: ArticleWithCmsAliases) {
+  return article.summary || article.description || createExcerpt(getArticleBodyText(article));
 }
 
 function getArticleImageUrl(article: ArticleWithCmsAliases) {
