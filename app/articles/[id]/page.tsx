@@ -106,6 +106,10 @@ const categorySlugMap: Record<MainCategory, string> = {
 };
 
 function getCategoryHref(category: MainCategory) {
+  if (category === "広告") {
+    return "/";
+  }
+
   return `/category/${categorySlugMap[category]}`;
 }
 
