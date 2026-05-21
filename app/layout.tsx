@@ -51,17 +51,6 @@ export const metadata: Metadata = {
     title: siteTitle,
     description: siteDescription,
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
