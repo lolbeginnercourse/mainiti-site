@@ -37,6 +37,7 @@ type CreatorsApiResponse = {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const CreatorsApi = require("@amzn/creatorsapi-nodejs-sdk");
 
 function getRequiredEnv(name: string) {

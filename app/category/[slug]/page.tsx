@@ -133,18 +133,30 @@ const categoryNames: MainCategory[] = [
 const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
 
 export function generateStaticParams() {
-  return Object.values(categorySlugMap).map((slug) => ({ slug }));
+  return Object.entries(categorySlugMap)
+    .filter(([category]) => category !== "広告")
+    .map(([, slug]) => ({ slug }));
 }
 
 export async function generateMetadata({
-  params
+  params,
+  searchParams
 }: CategoryPageProps): Promise<Metadata> {
   const resolvedParams = await Promise.resolve(params);
+  const resolvedSearchParams = await Promise.resolve(searchParams || {});
   const selectedCategory = getCategoryFromSlug(resolvedParams.slug);
+  const hasFilterQuery =
+    !!resolvedSearchParams.tag?.trim() ||
+    !!resolvedSearchParams.q?.trim() ||
+    parsePageNumber(resolvedSearchParams.page) > 1;
 
-  if (!selectedCategory) {
+  if (!selectedCategory || selectedCategory === "広告") {
     return {
-      title: "カテゴリが見つかりません｜毎日を楽に生きる"
+      title: "カテゴリが見つかりません｜毎日を楽に生きる",
+      robots: {
+        index: false,
+        follow: false
+      }
     };
   }
 
@@ -154,6 +166,9 @@ export async function generateMetadata({
     alternates: {
       canonical: `/category/${resolvedParams.slug}`
     },
+    robots: hasFilterQuery
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
     openGraph: {
       title: `${selectedCategory}の記事｜毎日を楽に生きる`,
       description: `${selectedCategory}カテゴリの記事一覧です。暮らしを少し楽にする実用情報をまとめています。`
@@ -886,7 +901,7 @@ export default async function CategoryPage({
   const resolvedSearchParams = await Promise.resolve(searchParams || {});
   const selectedCategory = getCategoryFromSlug(resolvedParams.slug);
 
-  if (!selectedCategory) {
+  if (!selectedCategory || selectedCategory === "広告") {
     notFound();
   }
 

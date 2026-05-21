@@ -95,6 +95,20 @@ type ArticleBlockInput = HtmlBlockInput | AmazonBlockInput;
 const SITE_URL = "https://mainitiwo.com";
 const DEFAULT_CATEGORY: MainCategory = "暮らし";
 
+const categorySlugMap: Record<MainCategory, string> = {
+  暮らし: "kurashi",
+  防災: "bousai",
+  家電: "kaden",
+  お金: "okane",
+  ライフスタイル: "lifestyle",
+  リラックス: "relax",
+  広告: "ad"
+};
+
+function getCategoryHref(category: MainCategory) {
+  return `/category/${categorySlugMap[category]}`;
+}
+
 const categoryConfig: Record<
   MainCategory,
   { color: string; background: string; href?: string }
@@ -102,32 +116,32 @@ const categoryConfig: Record<
   暮らし: {
     color: "#C76A2A",
     background: "linear-gradient(135deg,#FFF4E6,#F1D7B6,#E8BE86)",
-    href: "/?category=暮らし"
+    href: getCategoryHref("暮らし")
   },
   防災: {
     color: "#3B6F9E",
     background: "linear-gradient(135deg,#EAF3FA,#D8EAF6,#CFE3F2)",
-    href: "/?category=防災"
+    href: getCategoryHref("防災")
   },
   家電: {
     color: "#64748B",
     background: "linear-gradient(135deg,#F9FAFB,#E5E7EB,#D1D5DB)",
-    href: "/?category=家電"
+    href: getCategoryHref("家電")
   },
   お金: {
     color: "#D08A24",
     background: "linear-gradient(135deg,#FFF7ED,#F0D2A7,#E7B875)",
-    href: "/?category=お金"
+    href: getCategoryHref("お金")
   },
   ライフスタイル: {
     color: "#7A9A75",
     background: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
-    href: "/?category=ライフスタイル"
+    href: getCategoryHref("ライフスタイル")
   },
   リラックス: {
     color: "#6F9DB5",
     background: "linear-gradient(135deg,#F0F8FA,#EAF3FA,#D6E9F2)",
-    href: "/?category=リラックス"
+    href: getCategoryHref("リラックス")
   },
   広告: {
     color: "#B85C1E",
@@ -1070,7 +1084,7 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
               </Link>
               <Link
                 className="bottom-nav-button"
-                href={`/?category=${encodeURIComponent(articleCategory)}`}
+                href={getCategoryHref(articleCategory)}
               >
                 {articleCategory}の記事を見る
               </Link>

@@ -13,21 +13,36 @@ import {
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: "https://mainitiwo.com/"
-  }
-};
-
 type SearchParamsValue = {
   tag?: string;
   q?: string;
   page?: string;
+  category?: string;
 };
 
 type HomeProps = {
   searchParams?: SearchParamsValue | Promise<SearchParamsValue>;
 };
+
+export async function generateMetadata({
+  searchParams
+}: HomeProps): Promise<Metadata> {
+  const params = await Promise.resolve(searchParams || {});
+  const hasFilterQuery =
+    !!params.tag?.trim() ||
+    !!params.q?.trim() ||
+    !!params.category?.trim() ||
+    parsePageNumber(params.page) > 1;
+
+  return {
+    alternates: {
+      canonical: "https://mainitiwo.com/"
+    },
+    robots: hasFilterQuery
+      ? { index: false, follow: true }
+      : { index: true, follow: true }
+  };
+}
 
 type CmsCategoryObject = {
   id?: string;
