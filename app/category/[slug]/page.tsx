@@ -93,6 +93,13 @@ const categories: Array<{ name: string; key: "top" | MainCategory; href: string 
   { name: "リラックス", key: "リラックス", href: getCategoryHref("リラックス") }
 ];
 
+const siteInfoLinks = [
+  { name: "運営者情報", href: "/about" },
+  { name: "プライバシーポリシー", href: "/privacy" },
+  { name: "免責事項", href: "/disclaimer" },
+  { name: "お問い合わせ", href: "/contact" }
+];
+
 const tagColor: Record<string, string> = {
   暮らし: "#C76A2A",
   防災: "#3B6F9E",
@@ -853,6 +860,14 @@ function SiteFooter() {
             {categories.map((category) => (
               <Link key={category.key} className="footer-link" href={category.href}>
                 {category.name}
+              </Link>
+            ))}
+          </div>
+          <h3 className="footer-heading footer-heading-sub">サイト情報</h3>
+          <div className="footer-links">
+            {siteInfoLinks.map((link) => (
+              <Link key={link.href} className="footer-link" href={link.href}>
+                {link.name}
               </Link>
             ))}
           </div>

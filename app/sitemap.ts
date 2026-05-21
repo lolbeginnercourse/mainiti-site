@@ -63,6 +63,30 @@ const fixedUrls: MetadataRoute.Sitemap = [
     lastModified: new Date(),
     changeFrequency: "daily",
     priority: 0.8
+  },
+  {
+    url: `${SITE_URL}/about`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
+  },
+  {
+    url: `${SITE_URL}/privacy`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
+  },
+  {
+    url: `${SITE_URL}/disclaimer`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
+  },
+  {
+    url: `${SITE_URL}/contact`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
   }
 ];
 

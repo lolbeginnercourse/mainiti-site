@@ -146,6 +146,13 @@ const categories = [
     }))
 ];
 
+const siteInfoLinks = [
+  { name: "運営者情報", href: "/about" },
+  { name: "プライバシーポリシー", href: "/privacy" },
+  { name: "免責事項", href: "/disclaimer" },
+  { name: "お問い合わせ", href: "/contact" }
+];
+
 const categoryNames = Object.keys(categoryConfig) as MainCategory[];
 const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
 const japaneseDateFormatter = new Intl.DateTimeFormat("ja-JP", {
@@ -853,6 +860,14 @@ function SiteFooter() {
               </Link>
             ))}
           </div>
+          <h3 className="footer-heading footer-heading-sub">サイト情報</h3>
+          <div className="footer-links">
+            {siteInfoLinks.map((link) => (
+              <Link key={link.href} className="footer-link" href={link.href}>
+                {link.name}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
@@ -1015,6 +1030,17 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
                 );
               })}
             </div>
+
+            <aside className="article-disclosure" aria-label="この記事の運営方針">
+              <h2 className="article-disclosure-title">この記事について</h2>
+              <p>
+                毎日を楽に生きる編集部が、暮らしの中で判断しやすいように情報を整理しています。
+                商品リンクを含む場合がありますが、本文では選び方や注意点を優先して掲載しています。
+              </p>
+              <p>
+                掲載内容は公開時点の情報です。価格、在庫、サービス内容などは各販売ページ・公式情報でご確認ください。
+              </p>
+            </aside>
 
             {relatedArticles.length > 0 ? (
               <div className="related-box">
