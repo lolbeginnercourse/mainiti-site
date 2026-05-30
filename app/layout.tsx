@@ -4,9 +4,9 @@ import "./globals.css";
 
 const siteName = "毎日を楽に生きる";
 const siteUrl = "https://mainitiwo.com";
-const siteTitle = "毎日を楽に生きる｜暮らし・防災・家電・お金の実用ガイド";
+const siteTitle = "毎日を楽に生きる｜暮らし・防災・家電紹介・便利グッズの実用ガイド";
 const siteDescription =
-  "毎日の暮らしを少し楽にするための実用メディア。防災、家電、お金、ライフスタイルの疑問を初心者にもわかりやすく整理して解説します。";
+  "毎日の暮らしを少し楽にするための実用メディア。防災、家電紹介、便利グッズ、ライフスタイルの疑問を初心者にもわかりやすく整理して解説します。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
     "暮らし",
     "防災",
     "家電",
-    "お金",
+    "家電紹介",
+    "便利グッズ",
     "ライフスタイル",
     "育児",
     "生活の知恵",

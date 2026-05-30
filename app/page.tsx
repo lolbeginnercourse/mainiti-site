@@ -84,8 +84,17 @@ const categorySlugMap: Record<MainCategory, string> = {
   広告: "ad"
 };
 
+const categoryDisplayName: Partial<Record<MainCategory, string>> = {
+  お金: "家電紹介",
+  リラックス: "便利グッズ"
+};
+
 function getCategoryHref(category: MainCategory) {
   return `/category/${categorySlugMap[category]}`;
+}
+
+function getCategoryDisplayName(category: MainCategory | string) {
+  return categoryDisplayName[category as MainCategory] || category;
 }
 
 const categories: Array<{ name: string; key: "top" | MainCategory; href: string }> = [
@@ -93,9 +102,9 @@ const categories: Array<{ name: string; key: "top" | MainCategory; href: string 
   { name: "暮らし", key: "暮らし", href: getCategoryHref("暮らし") },
   { name: "防災", key: "防災", href: getCategoryHref("防災") },
   { name: "家電", key: "家電", href: getCategoryHref("家電") },
-  { name: "お金", key: "お金", href: getCategoryHref("お金") },
+  { name: getCategoryDisplayName("お金"), key: "お金", href: getCategoryHref("お金") },
   { name: "ライフスタイル", key: "ライフスタイル", href: getCategoryHref("ライフスタイル") },
-  { name: "リラックス", key: "リラックス", href: getCategoryHref("リラックス") }
+  { name: getCategoryDisplayName("リラックス"), key: "リラックス", href: getCategoryHref("リラックス") }
 ];
 
 const siteInfoLinks = [
@@ -538,7 +547,7 @@ function SiteHeader({ activeCategory }: { activeCategory?: string }) {
         <div className="title-wrap">
           <div className="site-badge">家庭の実用メディア</div>
           <h1 className="site-title">毎日を楽に生きる</h1>
-          <p className="site-subtitle">家のことを少しラクにする、家事・防災・家電・お金の整理帖</p>
+          <p className="site-subtitle">家のことを少しラクにする、家事・防災・家電紹介・便利グッズの整理帖</p>
         </div>
       </header>
 
@@ -624,9 +633,9 @@ function ArticleThumb({
     <div
       className={`${className} article-thumb thumb-fallback`}
       style={{ background: fallbackBackground }}
-      aria-label={`${category}の記事`}
+      aria-label={`${getCategoryDisplayName(category)}の記事`}
     >
-      <span>{category}</span>
+      <span>{getCategoryDisplayName(category)}</span>
     </div>
   );
 }
@@ -643,7 +652,7 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
         <div style={{ position: "relative" }}>
           <VisualBox article={article} />
           <span className="tag" style={{ background: tagColor[category] || "#B85C1E" }}>
-            {category}
+            {getCategoryDisplayName(category)}
           </span>
         </div>
 
@@ -775,7 +784,7 @@ function Sidebar({
 
                   <div className="recommend-content">
                     <div className="recommend-tag" style={{ color: tagColor[category] }}>
-                      {category}
+                      {getCategoryDisplayName(category)}
                     </div>
                     <div className="recommend-title">{article.title}</div>
                     {summary ? <div className="recommend-summary">{summary}</div> : null}
@@ -801,7 +810,7 @@ function Sidebar({
               >
                 <div className="feature-dot" style={{ background: ["#3B6F9E", "#64748B", "#D08A24"][index] }} />
                 <div>
-                  <div className="feature-title">{tag}</div>
+                  <div className="feature-title">{getCategoryDisplayName(tag)}</div>
                   <div className="feature-text">関連記事をチェック</div>
                 </div>
               </Link>
@@ -832,7 +841,7 @@ function SiteFooter() {
         <div>
           <h2 className="footer-brand">毎日を楽に生きる</h2>
           <p className="footer-text">
-            忙しい毎日の中で、家のことを少しでも楽にするために。家事、防災、家電、お金、休み方をわかりやすく整理しています。
+            忙しい毎日の中で、家のことを少しでも楽にするために。家事、防災、家電紹介、便利グッズをわかりやすく整理しています。
           </p>
         </div>
         <div>

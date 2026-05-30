@@ -105,12 +105,21 @@ const categorySlugMap: Record<MainCategory, string> = {
   広告: "ad"
 };
 
+const categoryDisplayName: Partial<Record<MainCategory, string>> = {
+  お金: "家電紹介",
+  リラックス: "便利グッズ"
+};
+
 function getCategoryHref(category: MainCategory) {
   if (category === "広告") {
     return "/";
   }
 
   return `/category/${categorySlugMap[category]}`;
+}
+
+function getCategoryDisplayName(category: MainCategory | string) {
+  return categoryDisplayName[category as MainCategory] || category;
 }
 
 const categoryConfig: Record<
@@ -158,7 +167,7 @@ const categories = [
   ...Object.entries(categoryConfig)
     .filter(([, config]) => config.href)
     .map(([name, config]) => ({
-      name,
+      name: getCategoryDisplayName(name),
       key: name,
       href: config.href || "/"
     }))
@@ -822,7 +831,7 @@ function SiteHeader() {
           <div className="site-badge">家庭の実用メディア</div>
           <div className="site-title">毎日を楽に生きる</div>
           <p className="site-subtitle">
-            家のことを少しラクにする、家事・防災・家電・お金の整理帖
+            家のことを少しラクにする、家事・防災・家電紹介・便利グッズの整理帖
           </p>
         </div>
       </header>
@@ -880,7 +889,7 @@ function SiteFooter() {
         <div>
           <h2 className="footer-brand">毎日を楽に生きる</h2>
           <p className="footer-text">
-            忙しい毎日の中で、家のことを少しでも楽にするために。家事、防災、家電、お金、休み方をわかりやすく整理しています。
+            忙しい毎日の中で、家のことを少しでも楽にするために。家事、防災、家電紹介、便利グッズをわかりやすく整理しています。
           </p>
         </div>
         <div>
@@ -987,7 +996,7 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
           <div className="article-hero" style={{ position: "relative" }}>
             <VisualBox article={article} />
             <span className="tag" style={{ background: getCategoryColor(articleCategory) }}>
-              {articleCategory}
+              {getCategoryDisplayName(articleCategory)}
             </span>
           </div>
 
@@ -1087,7 +1096,7 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
                         className="related-item"
                         href={getArticlePath(relatedArticle)}
                       >
-                        <span className="related-tag">{relatedCategory}</span>
+                        <span className="related-tag">{getCategoryDisplayName(relatedCategory)}</span>
                         <div className="related-name">{relatedArticle.title}</div>
                       </Link>
                     );
@@ -1104,7 +1113,7 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
                 className="bottom-nav-button"
                 href={getCategoryHref(articleCategory)}
               >
-                {articleCategory}の記事を見る
+                {getCategoryDisplayName(articleCategory)}の記事を見る
               </Link>
             </div>
           </div>
