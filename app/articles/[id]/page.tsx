@@ -146,15 +146,15 @@ const categoryConfig: Record<
     background: "linear-gradient(135deg,#FFF7ED,#F0D2A7,#E7B875)",
     href: getCategoryHref("お金")
   },
-  ライフスタイル: {
-    color: "#7A9A75",
-    background: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
-    href: getCategoryHref("ライフスタイル")
-  },
   リラックス: {
     color: "#6F9DB5",
     background: "linear-gradient(135deg,#F0F8FA,#EAF3FA,#D6E9F2)",
     href: getCategoryHref("リラックス")
+  },
+  ライフスタイル: {
+    color: "#7A9A75",
+    background: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
+    href: getCategoryHref("ライフスタイル")
   },
   広告: {
     color: "#B85C1E",

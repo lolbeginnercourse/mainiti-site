@@ -98,8 +98,8 @@ const categories: Array<{ name: string; key: "top" | MainCategory; href: string 
   { name: "防災", key: "防災", href: getCategoryHref("防災") },
   { name: "家電", key: "家電", href: getCategoryHref("家電") },
   { name: getCategoryDisplayName("お金"), key: "お金", href: getCategoryHref("お金") },
-  { name: "ライフスタイル", key: "ライフスタイル", href: getCategoryHref("ライフスタイル") },
-  { name: getCategoryDisplayName("リラックス"), key: "リラックス", href: getCategoryHref("リラックス") }
+  { name: getCategoryDisplayName("リラックス"), key: "リラックス", href: getCategoryHref("リラックス") },
+  { name: "ライフスタイル", key: "ライフスタイル", href: getCategoryHref("ライフスタイル") }
 ];
 
 const siteInfoLinks = [
