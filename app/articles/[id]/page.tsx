@@ -106,7 +106,7 @@ const categorySlugMap: Record<MainCategory, string> = {
 };
 
 const categoryDisplayName: Partial<Record<MainCategory, string>> = {
-  お金: "家電紹介",
+  お金: "ガジェット・機材",
   リラックス: "便利グッズ"
 };
 
@@ -831,7 +831,7 @@ function SiteHeader() {
           <div className="site-badge">家庭の実用メディア</div>
           <div className="site-title">毎日を楽に生きる</div>
           <p className="site-subtitle">
-            家のことを少しラクにする、家事・防災・家電紹介・便利グッズの整理帖
+            家のことを少しラクにする、家事・防災・ガジェット・機材・便利グッズの整理帖
           </p>
         </div>
       </header>
@@ -889,7 +889,7 @@ function SiteFooter() {
         <div>
           <h2 className="footer-brand">毎日を楽に生きる</h2>
           <p className="footer-text">
-            忙しい毎日の中で、家のことを少しでも楽にするために。家事、防災、家電紹介、便利グッズをわかりやすく整理しています。
+            忙しい毎日の中で、家のことを少しでも楽にするために。家事、防災、ガジェット・機材、便利グッズをわかりやすく整理しています。
           </p>
         </div>
         <div>
