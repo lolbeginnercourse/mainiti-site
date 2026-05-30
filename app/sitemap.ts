@@ -14,6 +14,7 @@ const SITE_URL = "https://mainitiwo.com";
 type ArticleForSitemap = Article & {
   noIndex?: boolean;
   noindex?: boolean;
+  no_index?: boolean;
   isAd?: boolean;
   publishedAt?: string;
   updatedAt?: string;
@@ -21,13 +22,40 @@ type ArticleForSitemap = Article & {
   createdAt?: string;
 };
 
-const fixedUrls: MetadataRoute.Sitemap = [
+const staticPages: MetadataRoute.Sitemap = [
   {
     url: `${SITE_URL}/`,
     lastModified: new Date(),
     changeFrequency: "daily",
     priority: 1
   },
+  {
+    url: `${SITE_URL}/about`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
+  },
+  {
+    url: `${SITE_URL}/privacy`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
+  },
+  {
+    url: `${SITE_URL}/disclaimer`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
+  },
+  {
+    url: `${SITE_URL}/contact`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5
+  }
+];
+
+const categoryPages: MetadataRoute.Sitemap = [
   {
     url: `${SITE_URL}/category/kurashi`,
     lastModified: new Date(),
@@ -63,30 +91,6 @@ const fixedUrls: MetadataRoute.Sitemap = [
     lastModified: new Date(),
     changeFrequency: "daily",
     priority: 0.8
-  },
-  {
-    url: `${SITE_URL}/about`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.5
-  },
-  {
-    url: `${SITE_URL}/privacy`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.5
-  },
-  {
-    url: `${SITE_URL}/disclaimer`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.5
-  },
-  {
-    url: `${SITE_URL}/contact`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.5
   }
 ];
 
@@ -96,6 +100,14 @@ function toAbsoluteUrl(path: string) {
   }
 
   return `${SITE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
+function isIndexableArticle(article: ArticleForSitemap) {
+  if (!article.id) return false;
+  if (article.isAd) return false;
+  if (article.noIndex || article.noindex || article.no_index) return false;
+
+  return true;
 }
 
 function getLastModified(article: ArticleForSitemap) {
@@ -125,13 +137,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const articleUrls = articles
-    .filter((article) => {
-      if (!article.id) return false;
-      if (article.isAd) return false;
-      if (article.noIndex || article.noindex) return false;
-
-      return true;
-    })
+    .filter(isIndexableArticle)
     .map((article) => ({
       url: toAbsoluteUrl(getArticlePath(article)),
       lastModified: getLastModified(article),
@@ -139,7 +145,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7
     }));
 
-  const urls: MetadataRoute.Sitemap = [...fixedUrls, ...articleUrls];
+  const urls: MetadataRoute.Sitemap = [
+    ...staticPages,
+    ...categoryPages,
+    ...articleUrls
+  ];
 
   const seen = new Set<string>();
 
