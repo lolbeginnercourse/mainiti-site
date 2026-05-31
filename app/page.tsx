@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import {
   getArticlePath,
   getArticles,
-  getPublishedDate,
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
@@ -150,24 +149,6 @@ const categoryNames: MainCategory[] = [
 ];
 
 const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
-
-function formatDate(date?: string) {
-  if (!date) return "";
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  })
-    .format(parsedDate)
-    .replaceAll("/", ".");
-}
 
 function getCategoryTextCandidates(value: unknown): string[] {
   if (!value) return [];
@@ -684,7 +665,6 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
           ) : null}
 
           <span className="read-more">記事を読む →</span>
-          <div className="date">{formatDate(getPublishedDate(article))}</div>
         </div>
       </Link>
     </article>
