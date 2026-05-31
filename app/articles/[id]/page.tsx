@@ -110,6 +110,11 @@ const categoryDisplayName: Partial<Record<MainCategory, string>> = {
   リラックス: "便利グッズ"
 };
 
+const categoryAliasMap: Record<string, MainCategory> = {
+  "ガジェット・機材": "お金",
+  便利グッズ: "リラックス"
+};
+
 function getCategoryHref(category: MainCategory) {
   if (category === "広告") {
     return "/";
@@ -501,6 +506,12 @@ function findArticleCategories(values: string[]): MainCategory[] {
   for (const value of values) {
     const cleanedValue = value.replace(/^#/, "").trim();
     if (!cleanedValue) continue;
+
+    const aliasCategory = categoryAliasMap[cleanedValue];
+
+    if (aliasCategory && !foundCategories.includes(aliasCategory)) {
+      foundCategories.push(aliasCategory);
+    }
 
     for (const category of categoryNames) {
       if (
