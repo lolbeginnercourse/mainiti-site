@@ -699,10 +699,11 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
   const category = getArticleCategory(article);
   const summary = getArticleSummary(article);
   const tags = getArticleTags(article);
+  const articlePath = getArticlePath(article);
 
   return (
     <article className="card">
-      <Link href={getArticlePath(article)} className="card-link">
+      <Link href={articlePath} className="card-link" aria-label={`${article.title}を読む`}>
         <div style={{ position: "relative" }}>
           <VisualBox article={article} />
           <span className="tag" style={{ background: tagColor[category] || "#B85C1E" }}>
@@ -714,24 +715,22 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
           <div className="card-title">{article.title}</div>
           {summary ? <div className="card-summary">{summary}</div> : null}
         </div>
+
+        <div className="card-footer-area">
+          {tags.length > 0 ? (
+            <div className="sub-tags" aria-hidden="true">
+              {tags.slice(0, 2).map((subTag) => (
+                <span key={subTag} className="sub-tag">
+                  #{subTag}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          <span className="read-more">記事を読む →</span>
+          <div className="date">{formatDate(getPublishedDate(article))}</div>
+        </div>
       </Link>
-
-      <div className="card-footer-area">
-        {tags.length > 0 ? (
-          <div className="sub-tags">
-            {tags.slice(0, 2).map((subTag) => (
-              <Link key={subTag} className="sub-tag" href={`/?tag=${encodeURIComponent(subTag)}`}>
-                #{subTag}
-              </Link>
-            ))}
-          </div>
-        ) : null}
-
-        <Link className="read-more" href={getArticlePath(article)}>
-          記事を読む →
-        </Link>
-        <div className="date">{formatDate(getPublishedDate(article))}</div>
-      </div>
     </article>
   );
 }
