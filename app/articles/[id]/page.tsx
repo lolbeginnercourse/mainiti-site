@@ -974,7 +974,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
   const articleCategory = getArticleCategory(article);
   const safeBody = sanitizeHtml(getArticleBody(article));
   const tocItems = extractHeadings(safeBody);
-  const articleSummary = getArticleSummary(article);
   const articleTags = getArticleTags(article);
   const bodyWithHeadingIds = addHeadingIdsToSafeHtml(safeBody);
   const bodyWithA8 = replaceA8Shortcodes(bodyWithHeadingIds);
@@ -1003,19 +1002,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
           <div className="article-content">
             <div className="date">{formatDate(getPublishedDate(article))}</div>
             <h1 className="article-title">{article.title}</h1>
-
-            {articleSummary ? <p className="article-summary">{articleSummary}</p> : null}
-
-            {tocItems.length > 0 ? (
-              <div className="article-points">
-                <p className="article-points-title">この記事でわかること</p>
-                <ul className="article-points-list">
-                  {tocItems.slice(0, 3).map((item) => (
-                    <li key={`point-${item.id}`}>{item.text}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
 
             {articleTags.length > 0 ? (
               <div className="sub-tags">
