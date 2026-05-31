@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import {
   getArticlePath,
   getArticles,
-  getPublishedDate,
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
@@ -190,24 +189,6 @@ export async function generateMetadata({
       description: `${selectedCategoryLabel}カテゴリの記事一覧です。暮らしを少し楽にする実用情報をまとめています。`
     }
   };
-}
-
-function formatDate(date?: string) {
-  if (!date) return "";
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  })
-    .format(parsedDate)
-    .replaceAll("/", ".");
 }
 
 function getCategoryTextCandidates(value: unknown): string[] {
@@ -702,7 +683,7 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
   const articlePath = getArticlePath(article);
 
   return (
-    <article className="card">
+    <article className="card category-card">
       <Link href={articlePath} className="card-link" aria-label={`${article.title}を読む`}>
         <div style={{ position: "relative" }}>
           <VisualBox article={article} />
@@ -728,7 +709,6 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
           ) : null}
 
           <span className="read-more">記事を読む →</span>
-          <div className="date">{formatDate(getPublishedDate(article))}</div>
         </div>
       </Link>
     </article>

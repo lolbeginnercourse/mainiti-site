@@ -430,6 +430,10 @@ button {
   padding: 0 18px 18px;
 }
 
+.category-card .card-footer-area {
+  padding-bottom: 14px;
+}
+
 .read-more {
   display: inline-flex;
   align-items: center;
