@@ -5,7 +5,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getArticlePath,
-  getArticles,
+  getCachedArticles,
+  getOptimizedImageUrl,
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
@@ -305,8 +306,9 @@ function getArticleSummary(article: ArticleWithCmsAliases) {
   return article.summary || article.description || createExcerpt(getArticleBodyText(article));
 }
 
-function getArticleImageUrl(article: ArticleWithCmsAliases) {
-  return article.eyecatch?.url || article.ogImage?.url || "";
+function getArticleImageUrl(article: ArticleWithCmsAliases, width = 800) {
+  const imageUrl = article.eyecatch?.url || article.ogImage?.url || "";
+  return getOptimizedImageUrl(imageUrl, width);
 }
 
 function getArticleImageAlt(article: ArticleWithCmsAliases) {
@@ -612,7 +614,7 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
   const category = getArticleCategory(article);
   const accent = tagColor[category] || "#C76A2A";
   const fallbackBackground = categoryBackground[category] || categoryBackground["暮らし"];
-  const imageUrl = getArticleImageUrl(article);
+  const imageUrl = getArticleImageUrl(article, 800);
 
   if (imageUrl) {
     return (
@@ -649,7 +651,7 @@ function ArticleThumb({
   className: string;
 }) {
   const category = getArticleCategory(article);
-  const imageUrl = getArticleImageUrl(article);
+  const imageUrl = getArticleImageUrl(article, 240);
   const fallbackBackground = categoryBackground[category] || categoryBackground["暮らし"];
 
   if (imageUrl) {
@@ -924,7 +926,7 @@ export default async function CategoryPage({
   let articles: ArticleWithCmsAliases[] = [];
 
   try {
-    articles = (await getArticles()) as ArticleWithCmsAliases[];
+    articles = (await getCachedArticles()) as ArticleWithCmsAliases[];
   } catch {
     articles = [];
   }

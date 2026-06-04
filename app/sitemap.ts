@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import {
   getArticlePath,
-  getArticles,
+  getCachedArticles,
   getPublishedDate,
   type Article
 } from "@/src/libs/microcms";
@@ -131,7 +131,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articles: ArticleForSitemap[] = [];
 
   try {
-    articles = (await getArticles()) as ArticleForSitemap[];
+    articles = (await getCachedArticles()) as ArticleForSitemap[];
   } catch {
     articles = [];
   }

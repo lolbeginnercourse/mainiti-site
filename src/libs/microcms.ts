@@ -1,4 +1,5 @@
 import { createClient } from "microcms-js-sdk";
+import { unstable_cache } from "next/cache";
 
 export type MainCategory =
   | "暮らし"
@@ -118,6 +119,10 @@ export async function getArticles() {
   return articles;
 }
 
+export const getCachedArticles = unstable_cache(getArticles, ["microcms-articles"], {
+  revalidate: 60
+});
+
 export async function getPopularArticles(limit = 5) {
   const data = await client.getList<Article>({
     endpoint: ENDPOINT,
@@ -205,6 +210,19 @@ export function getPublishedDate(article: Article) {
 
 export function getArticleImageUrl(article: Article) {
   return article.eyecatch?.url || article.ogImage?.url || "";
+}
+
+export function getOptimizedImageUrl(url: string, width: number, quality = 80) {
+  if (!url || !url.startsWith("https://images.microcms-assets.io/")) {
+    return url;
+  }
+
+  const optimizedUrl = new URL(url);
+  optimizedUrl.searchParams.set("w", String(width));
+  optimizedUrl.searchParams.set("fm", "webp");
+  optimizedUrl.searchParams.set("q", String(quality));
+
+  return optimizedUrl.toString();
 }
 
 export function getArticleImageAlt(article: Article) {

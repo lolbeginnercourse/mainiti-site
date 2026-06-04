@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 import {
   getArticleBySlugOrId,
   getArticlePath,
-  getArticles,
+  getCachedArticles as getCachedArticleList,
+  getOptimizedImageUrl,
   getPublishedDate,
   type Article,
   type MainCategory
@@ -450,7 +451,7 @@ const getCachedArticleBySlugOrId = cache(async (id: string, draftKey?: string) =
 });
 
 const getCachedArticles = cache(async () => {
-  return (await getArticles()) as ArticleWithCmsAliases[];
+  return (await getCachedArticleList()) as ArticleWithCmsAliases[];
 });
 
 const getCachedAmazonProduct = cache(async (asinOrUrl: string) => {
@@ -870,7 +871,7 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
       <div className="visual-box">
         <img
           className="visual-image"
-          src={article.eyecatch.url}
+          src={getOptimizedImageUrl(article.eyecatch.url, 1280, 85)}
           alt={article.eyecatchAlt || article.title}
           fetchPriority="high"
           decoding="async"
