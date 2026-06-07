@@ -504,6 +504,17 @@ button {
   font-size: 20px;
 }
 
+.side-card-text {
+  margin: 0;
+  color: #626b75;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.side-card-text + .read-more {
+  margin-top: 14px;
+}
+
 .rank-item {
   display: grid;
   grid-template-columns: 30px 88px minmax(0, 1fr);

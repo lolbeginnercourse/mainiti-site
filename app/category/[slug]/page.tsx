@@ -107,6 +107,19 @@ const categories: Array<{ name: string; key: "top" | MainCategory; href: string 
   { name: "ライフスタイル", key: "ライフスタイル", href: getCategoryHref("ライフスタイル") }
 ];
 
+const purposeLinks = [
+  { title: "梅雨・夏の湿気とニオイ対策", text: "家のこもった臭いや水まわりの不快感を減らす", href: "/?q=湿気%20ニオイ%20夏" },
+  { title: "家事を時短したい", text: "掃除、片付け、毎日の手間を軽くする", href: "/?q=時短%20家事" },
+  { title: "もしもの備えを整える", text: "停電、断水、避難前に確認したい防災", href: getCategoryHref("防災") },
+  { title: "買って失敗しない機材選び", text: "家電、ガジェット、便利グッズを比較する", href: getCategoryHref("お金") }
+];
+
+const hubLinks = [
+  { title: "夏のお悩み解決グッズ", text: "暑さ、湿気、ニオイ対策をまとめて確認", href: "/?q=夏%20グッズ" },
+  { title: "掃除・ニオイ対策", text: "原因を知って、家の不快感を減らす", href: "/?q=掃除%20ニオイ" },
+  { title: "防災の基本", text: "家族で備える最低限のチェック", href: getCategoryHref("防災") }
+];
+
 const siteInfoLinks = [
   { name: "運営者情報", href: "/about" },
   { name: "プライバシーポリシー", href: "/privacy" },
@@ -322,10 +335,6 @@ function getArticleTags(article: ArticleWithCmsAliases) {
   return normalizedTags
     .map((tag) => String(tag).replace(/^#/, "").trim())
     .filter((tag) => tag && !hiddenTags.has(tag));
-}
-
-function uniqueTags(articles: ArticleWithCmsAliases[]) {
-  return Array.from(new Set(articles.flatMap((article) => getArticleTags(article)))).filter(Boolean);
 }
 
 function mergeUniqueArticles(
@@ -735,17 +744,12 @@ function InlineAd({ article }: { article?: ArticleWithCmsAliases }) {
 function Sidebar({
   popularArticles,
   recommendedArticles,
-  adArticle,
-  allTags
+  adArticle
 }: {
   popularArticles: ArticleWithCmsAliases[];
   recommendedArticles: ArticleWithCmsAliases[];
   adArticle?: ArticleWithCmsAliases;
-  allTags: string[];
 }) {
-  const topicTags = allTags.slice(0, 8);
-  const fallbackCategories = categories.filter((category) => category.key !== "top").slice(0, 6);
-
   return (
     <aside>
       <div className="sidebar-stack">
@@ -789,24 +793,17 @@ function Sidebar({
 
         <div className="side-card">
           <h3>目的別に探す</h3>
-
-          {topicTags.length > 0 ? (
-            <div className="tag-cloud">
-              {topicTags.map((subTag) => (
-                <Link key={subTag} className="tag-cloud-button" href={`/?tag=${encodeURIComponent(subTag)}`}>
-                  {subTag}
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="tag-cloud">
-              {fallbackCategories.map((category) => (
-                <Link key={category.key} className="tag-cloud-button" href={category.href}>
-                  {category.name}
-                </Link>
-              ))}
-            </div>
-          )}
+          <div className="feature-list">
+            {purposeLinks.map((link, index) => (
+              <Link key={link.href} className="feature-item clickable-row" href={link.href}>
+                <div className="feature-dot" style={{ background: ["#C76A2A", "#7A9A75", "#3B6F9E", "#D08A24"][index] }} />
+                <div>
+                  <div className="feature-title">{link.title}</div>
+                  <div className="feature-text">{link.text}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
 
         <div className="side-card">
@@ -834,26 +831,29 @@ function Sidebar({
         </div>
 
         <div className="side-card">
-          <h3>注目テーマ</h3>
+          <h3>まとめて読む</h3>
           <div className="feature-list">
-            {(topicTags.length ? topicTags.slice(0, 3) : ["防災", "家電", "お金"]).map((tag, index) => (
-              <Link
-                key={tag}
-                className="feature-item clickable-row"
-                href={
-                  categoryNames.includes(tag as MainCategory)
-                    ? getCategoryHref(tag as MainCategory)
-                    : `/?tag=${encodeURIComponent(tag)}`
-                }
-              >
+            {hubLinks.map((link, index) => (
+              <Link key={link.href} className="feature-item clickable-row" href={link.href}>
                 <div className="feature-dot" style={{ background: ["#3B6F9E", "#64748B", "#D08A24"][index] }} />
                 <div>
-                  <div className="feature-title">{getCategoryDisplayName(tag)}</div>
-                  <div className="feature-text">関連記事をチェック</div>
+                  <div className="feature-title">{link.title}</div>
+                  <div className="feature-text">{link.text}</div>
                 </div>
               </Link>
             ))}
           </div>
+        </div>
+
+        <div className="side-card editor-card">
+          <h3>編集部について</h3>
+          <p className="side-card-text">
+            家事、防災、家電・ガジェット選びを、一般家庭の目線で試しやすく整理しています。
+            購入を急がせず、注意点と向き不向きもあわせて掲載します。
+          </p>
+          <Link className="read-more" href="/about">
+            運営方針を見る →
+          </Link>
         </div>
       </div>
     </aside>
@@ -933,7 +933,6 @@ export default async function CategoryPage({
 
   const normalArticles = articles.filter((article) => !article.isAd);
   const adArticles = articles.filter((article) => article.isAd);
-  const allTags = uniqueTags(normalArticles);
 
   const popularFiltered = normalArticles.filter((article) => article.isPopular);
   const recommendedFiltered = normalArticles.filter((article) => article.isRecommended);
@@ -1039,7 +1038,6 @@ export default async function CategoryPage({
             popularArticles={popularArticles}
             recommendedArticles={recommendedArticles}
             adArticle={sideAdArticle}
-            allTags={allTags}
           />
         </div>
       </main>
