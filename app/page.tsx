@@ -287,6 +287,10 @@ function getArticleImageAlt(article: ArticleWithCmsAliases) {
   return article.eyecatchAlt || article.title || "記事の見出し画像";
 }
 
+function getFallbackVisualTitle(article: ArticleWithCmsAliases) {
+  return article.title.replace(/[？?].*$/, "").trim() || article.title;
+}
+
 function getArticleTags(article: ArticleWithCmsAliases) {
   const tags = article.subTags || article.tags || [];
   const normalizedTags = Array.isArray(tags) ? tags : [tags];
@@ -595,7 +599,7 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
   }
 
   return (
-    <div className="visual-box" style={{ background: fallbackBackground }}>
+    <div className="visual-box visual-fallback" style={{ background: fallbackBackground }}>
       <div className="room-floor" />
       <div className="home-shape" style={{ borderBottomColor: accent }} />
       <div className="home-body" />
@@ -604,6 +608,10 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
       <div className="table-shape" />
       <div className="cup-shape" />
       <div className="soft-orb" />
+      <div className="visual-fallback-copy">
+        <span>{getCategoryDisplayName(category)}の困りごと</span>
+        <strong>{getFallbackVisualTitle(article)}</strong>
+      </div>
     </div>
   );
 }
