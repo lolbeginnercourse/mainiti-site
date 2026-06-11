@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "免責事項｜毎日を楽に生きる",
   description:
-    "毎日を楽に生きるの掲載情報、広告、外部リンクに関する免責事項です。",
+    "毎日を楽に生きるの掲載情報、外部リンクに関する免責事項です。",
   alternates: {
     canonical: "https://mainitiwo.com/disclaimer"
   }

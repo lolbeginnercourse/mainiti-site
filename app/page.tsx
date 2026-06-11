@@ -287,10 +287,6 @@ function getArticleImageAlt(article: ArticleWithCmsAliases) {
   return article.eyecatchAlt || article.title || "記事の見出し画像";
 }
 
-function getFallbackVisualTitle(article: ArticleWithCmsAliases) {
-  return article.title.replace(/[？?].*$/, "").trim() || article.title;
-}
-
 function getArticleTags(article: ArticleWithCmsAliases) {
   const tags = article.subTags || article.tags || [];
   const normalizedTags = Array.isArray(tags) ? tags : [tags];
@@ -608,10 +604,6 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
       <div className="table-shape" />
       <div className="cup-shape" />
       <div className="soft-orb" />
-      <div className="visual-fallback-copy">
-        <span>{getCategoryDisplayName(category)}の困りごと</span>
-        <strong>{getFallbackVisualTitle(article)}</strong>
-      </div>
     </div>
   );
 }
@@ -928,12 +920,6 @@ export default async function Home({ searchParams }: HomeProps) {
       ? `${selectedTag}の記事`
       : "おすすめ記事";
 
-  const note = searchQuery
-    ? `${totalArticles}件の記事が見つかりました`
-    : selectedTag
-      ? "目的に近いテーマで絞り込んだ記事一覧です"
-      : "家の中の小さな不便や、毎日の負担を減らす記事をまとめています";
-
   return (
     <div className="page">
       <SiteHeader />
@@ -942,7 +928,6 @@ export default async function Home({ searchParams }: HomeProps) {
         <div className="layout">
           <section>
             <h2 className="section-title">{title}</h2>
-            <p className="page-note">{note}</p>
             <div className="list-status">
               <span>{totalArticles}件の記事</span>
               <span>{currentPage} / {totalPages}ページ</span>

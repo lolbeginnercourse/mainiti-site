@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "お問い合わせ｜毎日を楽に生きる",
   description:
-    "毎日を楽に生きるへのお問い合わせ、掲載内容の確認依頼、広告に関する連絡についてのページです。",
+    "毎日を楽に生きるへのお問い合わせ、掲載内容の確認依頼についてのページです。",
   alternates: {
     canonical: "https://mainitiwo.com/contact"
   }
@@ -24,7 +24,7 @@ export default function ContactPage() {
 
             <div className="article-body">
               <p>
-                掲載内容の確認、修正依頼、広告掲載、その他サイトに関するご連絡は、
+                掲載内容の確認、修正依頼、その他サイトに関するご連絡は、
                 下記メールアドレスまでお願いいたします。
               </p>
 

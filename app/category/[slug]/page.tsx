@@ -328,10 +328,6 @@ function getArticleImageAlt(article: ArticleWithCmsAliases) {
   return article.eyecatchAlt || article.title || "記事の見出し画像";
 }
 
-function getFallbackVisualTitle(article: ArticleWithCmsAliases) {
-  return article.title.replace(/[？?].*$/, "").trim() || article.title;
-}
-
 function getArticleTags(article: ArticleWithCmsAliases) {
   const tags = article.subTags || article.tags || [];
   const normalizedTags = Array.isArray(tags) ? tags : [tags];
@@ -652,10 +648,6 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
       <div className="table-shape" />
       <div className="cup-shape" />
       <div className="soft-orb" />
-      <div className="visual-fallback-copy">
-        <span>{getCategoryDisplayName(category)}の困りごと</span>
-        <strong>{getFallbackVisualTitle(article)}</strong>
-      </div>
     </div>
   );
 }
@@ -986,12 +978,6 @@ export default async function CategoryPage({
       ? `${selectedTag}の記事`
       : `${selectedCategoryLabel}の記事`;
 
-  const note = searchQuery
-    ? `${totalArticles}件の記事が見つかりました`
-    : selectedTag
-      ? "目的に近いテーマで絞り込んだ記事一覧です"
-      : `${selectedCategoryLabel}カテゴリの記事一覧です`;
-
   return (
     <div className="page">
       <SiteHeader activeCategory={selectedCategory} />
@@ -1000,7 +986,6 @@ export default async function CategoryPage({
         <div className="layout">
           <section>
             <h2 className="section-title">{title}</h2>
-            <p className="page-note">{note}</p>
 
             <SearchBox
               slug={resolvedParams.slug}
