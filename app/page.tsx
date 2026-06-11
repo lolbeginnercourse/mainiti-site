@@ -264,18 +264,8 @@ function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function createExcerpt(value: string, maxLength = 90) {
-  const text = stripHtml(value);
-
-  if (text.length <= maxLength) {
-    return text;
-  }
-
-  return `${text.slice(0, maxLength)}...`;
-}
-
 function getArticleSummary(article: ArticleWithCmsAliases) {
-  return article.summary || article.description || createExcerpt(getArticleBodyText(article));
+  return article.summary || article.description || "";
 }
 
 function getArticleImageUrl(article: ArticleWithCmsAliases, width = 800) {
@@ -303,8 +293,11 @@ function mergeUniqueArticles(
   const seen = new Set<string>();
 
   return [...primaryArticles, ...fallbackArticles].filter((article) => {
-    if (seen.has(article.id)) return false;
-    seen.add(article.id);
+    const titleKey = normalizeSearchKeyword(article.title);
+    const keys = [article.id, titleKey].filter(Boolean);
+
+    if (keys.some((key) => seen.has(key))) return false;
+    keys.forEach((key) => seen.add(key));
     return true;
   });
 }
@@ -645,7 +638,6 @@ function ArticleThumb({
 
 function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
   const category = getArticleCategory(article);
-  const summary = getArticleSummary(article);
   const tags = getArticleTags(article);
   const articlePath = getArticlePath(article);
 
@@ -661,7 +653,6 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
 
         <div className="card-body">
           <div className="card-title">{article.title}</div>
-          {summary ? <div className="card-summary">{summary}</div> : null}
         </div>
 
         <div className="card-footer-area">
@@ -712,7 +703,6 @@ function Sidebar({
           <h3>よく読まれている記事</h3>
 
           {popularArticles.slice(0, 3).map((article, index) => {
-            const summary = getArticleSummary(article);
             const rankColors = ["#B85C1E", "#C76A2A", "#7A9A75"];
 
             return (
@@ -725,7 +715,6 @@ function Sidebar({
 
                 <div className="rank-content">
                   <div className="rank-title">{article.title}</div>
-                  {summary ? <div className="rank-summary">{summary}</div> : null}
                 </div>
               </Link>
             );
@@ -765,19 +754,12 @@ function Sidebar({
           <h3>次に読むなら</h3>
           <div className="recommend-list">
             {recommendedArticles.slice(0, 3).map((article) => {
-              const category = getArticleCategory(article);
-              const summary = getArticleSummary(article);
-
               return (
                 <Link key={article.id} className="recommend-item clickable-row" href={getArticlePath(article)}>
                   <ArticleThumb article={article} className="recommend-thumb" />
 
                   <div className="recommend-content">
-                    <div className="recommend-tag" style={{ color: tagColor[category] }}>
-                      {getCategoryDisplayName(category)}
-                    </div>
                     <div className="recommend-title">{article.title}</div>
-                    {summary ? <div className="recommend-summary">{summary}</div> : null}
                   </div>
                 </Link>
               );

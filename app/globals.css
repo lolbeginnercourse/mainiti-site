@@ -411,17 +411,6 @@ button {
   overflow: hidden;
 }
 
-.card-summary {
-  margin-top: 9px;
-  color: #666f7a;
-  font-size: 13.5px;
-  line-height: 1.7;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .card-footer-area {
   padding: 0 18px 18px;
 }
@@ -561,17 +550,6 @@ button {
   overflow: hidden;
 }
 
-.rank-summary {
-  margin-top: 4px;
-  color: #6b7280;
-  font-size: 12px;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .tag-cloud {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -616,12 +594,6 @@ button {
   min-width: 0;
 }
 
-.recommend-tag {
-  margin-bottom: 4px;
-  font-size: 12px;
-  font-weight: 900;
-}
-
 .recommend-title {
   color: var(--text);
   font-size: 13.5px;
@@ -629,17 +601,6 @@ button {
   font-weight: 900;
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.recommend-summary {
-  margin-top: 4px;
-  color: #6b7280;
-  font-size: 12px;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1588,10 +1549,6 @@ button {
     font-size: 17px;
   }
 
-  .card-summary {
-    font-size: 13.5px;
-  }
-
   .side-card,
   .ranking {
     padding: 20px;
@@ -1619,11 +1576,6 @@ button {
 
   .rank-title {
     font-size: 13.5px;
-  }
-
-  .rank-summary,
-  .recommend-summary {
-    display: none;
   }
 
   .tag-cloud {
