@@ -903,12 +903,6 @@ function SiteFooter() {
     <footer className="footer">
       <div className="footer-inner">
         <div>
-          <h2 className="footer-brand">毎日を楽に生きる</h2>
-          <p className="footer-text">
-            忙しい毎日の中で、家のことを少しでも楽にするために。家事、防災、ガジェット・機材、便利グッズをわかりやすく整理しています。
-          </p>
-        </div>
-        <div>
           <h3 className="footer-heading">カテゴリ</h3>
           <div className="footer-links">
             {categories.map((category) => (
@@ -917,6 +911,8 @@ function SiteFooter() {
               </Link>
             ))}
           </div>
+        </div>
+        <div>
           <h3 className="footer-heading footer-heading-sub">サイト情報</h3>
           <div className="footer-links">
             {siteInfoLinks.map((link) => (
