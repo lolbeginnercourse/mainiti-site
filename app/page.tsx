@@ -540,6 +540,10 @@ function SiteHeader({ activeCategory }: { activeCategory?: string }) {
       <header className="site-header">
         <div className="decor-band top" />
         <div className="decor-band bottom" />
+        <div className="header-info-links">
+          <Link href="/privacy">プライバシーポリシー</Link>
+          <Link href="/contact">お問い合わせ</Link>
+        </div>
         <div className="title-wrap">
           <div className="site-badge">家庭の実用メディア</div>
           <h1 className="site-title">毎日を楽に生きる</h1>

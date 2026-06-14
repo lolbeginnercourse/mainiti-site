@@ -106,6 +106,24 @@ button {
   bottom: 0;
 }
 
+.header-info-links {
+  position: absolute;
+  top: 34px;
+  left: 28px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: #3d2b22;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.header-info-links a {
+  white-space: nowrap;
+}
+
 .title-wrap {
   position: relative;
   z-index: 2;
@@ -1442,6 +1460,13 @@ button {
 
   .decor-band {
     height: 18px;
+  }
+
+  .header-info-links {
+    top: 10px;
+    left: 12px;
+    gap: 12px;
+    font-size: 24px;
   }
 
   .title-wrap {
