@@ -112,19 +112,6 @@ const categories: Array<{ name: string; key: "top" | MainCategory; href: string 
   { name: "ライフスタイル", key: "ライフスタイル", href: getCategoryHref("ライフスタイル") }
 ];
 
-const purposeLinks = [
-  { title: "梅雨・夏の湿気とニオイ対策", text: "家のこもった臭いや水まわりの不快感を減らす", href: "/?q=湿気%20ニオイ%20夏" },
-  { title: "家事を時短したい", text: "掃除、片付け、毎日の手間を軽くする", href: "/?q=時短%20家事" },
-  { title: "もしもの備えを整える", text: "停電、断水、避難前に確認したい防災", href: getCategoryHref("防災") },
-  { title: "買って失敗しない機材選び", text: "家電、ガジェット、便利グッズを比較する", href: getCategoryHref("お金") }
-];
-
-const hubLinks = [
-  { title: "夏のお悩み解決グッズ", text: "暑さ、湿気、ニオイ対策をまとめて確認", href: "/?q=夏%20グッズ" },
-  { title: "掃除・ニオイ対策", text: "原因を知って、家の不快感を減らす", href: "/?q=掃除%20ニオイ" },
-  { title: "防災の基本", text: "家族で備える最低限のチェック", href: getCategoryHref("防災") }
-];
-
 const siteInfoLinks = [
   { name: "運営者情報", href: "/about" },
   { name: "プライバシーポリシー", href: "/privacy" },
@@ -693,11 +680,9 @@ function InlineAd({ article }: { article?: ArticleWithCmsAliases }) {
 
 function Sidebar({
   popularArticles,
-  recommendedArticles,
   adArticle
 }: {
   popularArticles: ArticleWithCmsAliases[];
-  recommendedArticles: ArticleWithCmsAliases[];
   adArticle?: ArticleWithCmsAliases;
 }) {
   return (
@@ -738,53 +723,6 @@ function Sidebar({
             </Link>
           </div>
         ) : null}
-
-        <div className="side-card">
-          <h3>目的別に探す</h3>
-          <div className="feature-list">
-            {purposeLinks.map((link, index) => (
-              <Link key={link.href} className="feature-item clickable-row" href={link.href}>
-                <div className="feature-dot" style={{ background: ["#C76A2A", "#7A9A75", "#3B6F9E", "#D08A24"][index] }} />
-                <div>
-                  <div className="feature-title">{link.title}</div>
-                  <div className="feature-text">{link.text}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="side-card">
-          <h3>次に読むなら</h3>
-          <div className="recommend-list">
-            {recommendedArticles.slice(0, 3).map((article) => {
-              return (
-                <Link key={article.id} className="recommend-item clickable-row" href={getArticlePath(article)}>
-                  <ArticleThumb article={article} className="recommend-thumb" />
-
-                  <div className="recommend-content">
-                    <div className="recommend-title">{article.title}</div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="side-card">
-          <h3>まとめて読む</h3>
-          <div className="feature-list">
-            {hubLinks.map((link, index) => (
-              <Link key={link.href} className="feature-item clickable-row" href={link.href}>
-                <div className="feature-dot" style={{ background: ["#3B6F9E", "#64748B", "#D08A24"][index] }} />
-                <div>
-                  <div className="feature-title">{link.title}</div>
-                  <div className="feature-text">{link.text}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
 
         <div className="side-card editor-card">
           <h3>編集部について</h3>
@@ -861,21 +799,8 @@ export default async function Home({ searchParams }: HomeProps) {
   const adArticles = articles.filter((article) => article.isAd);
 
   const popularFiltered = normalArticles.filter((article) => article.isPopular);
-  const recommendedFiltered = normalArticles.filter((article) => article.isRecommended);
 
   const popularArticles = mergeUniqueArticles(popularFiltered, normalArticles).slice(0, 3);
-  const popularArticleIds = new Set(popularArticles.map((article) => article.id));
-
-  const recommendedWithoutPopular = mergeUniqueArticles(
-    recommendedFiltered.filter((article) => !popularArticleIds.has(article.id)),
-    normalArticles.filter((article) => !popularArticleIds.has(article.id))
-  );
-
-  const recommendedArticles =
-    recommendedWithoutPopular.length > 0
-      ? recommendedWithoutPopular.slice(0, 3)
-      : normalArticles.slice(0, 3);
-
   const visibleArticles = normalArticles.filter((article) => {
     const tags = getArticleTags(article);
 
@@ -955,7 +880,6 @@ export default async function Home({ searchParams }: HomeProps) {
 
           <Sidebar
             popularArticles={popularArticles}
-            recommendedArticles={recommendedArticles}
             adArticle={sideAdArticle}
           />
         </div>
