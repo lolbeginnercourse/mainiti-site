@@ -532,7 +532,6 @@ function SiteHeader({ activeCategory }: { activeCategory?: string }) {
           <Link href="/contact">お問い合わせ</Link>
         </div>
         <div className="title-wrap">
-          <div className="site-badge">家庭の実用メディア</div>
           <h1 className="site-title">毎日を楽に生きる</h1>
           <p className="site-subtitle">家のことを少しラクにする、家事・防災・ガジェット・機材・便利グッズの整理帖</p>
         </div>

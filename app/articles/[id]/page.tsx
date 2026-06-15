@@ -844,7 +844,6 @@ function SiteHeader() {
           <Link href="/contact">お問い合わせ</Link>
         </div>
         <div className="title-wrap">
-          <div className="site-badge">家庭の実用メディア</div>
           <div className="site-title">毎日を楽に生きる</div>
           <p className="site-subtitle">
             家のことを少しラクにする、家事・防災・ガジェット・機材・便利グッズの整理帖

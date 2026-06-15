@@ -135,20 +135,6 @@ button {
   text-align: center;
 }
 
-.site-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 5px;
-  padding: 3px 11px;
-  border-radius: 999px;
-  background: rgba(199,106,42,0.10);
-  color: #9a5b16;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-}
-
 .site-title {
   margin: 0;
   font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
@@ -1459,12 +1445,6 @@ button {
     max-width: 420px;
     padding: 8px 16px;
     border-radius: 24px;
-  }
-
-  .site-badge {
-    font-size: 10px;
-    padding: 3px 9px;
-    margin-bottom: 4px;
   }
 
   .site-title {
