@@ -1448,13 +1448,15 @@ button {
   }
 
   .header-info-links {
-    top: 10px;
-    left: 12px;
-    gap: 12px;
-    font-size: 24px;
+    top: 6px;
+    left: 10px;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.2;
   }
 
   .title-wrap {
+    margin-top: 14px;
     width: calc(100% - 28px);
     max-width: 420px;
     padding: 8px 16px;
