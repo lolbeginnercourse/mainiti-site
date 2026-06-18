@@ -587,6 +587,10 @@ function getCanonicalUrl(article: ArticleWithCmsAliases) {
   }
 }
 
+function removeSiteTitleSuffix(title: string) {
+  return title.replace(/(?:｜毎日を楽に生きる)+$/g, "").trim();
+}
+
 function parseArticleBlockInputs(html: string): ArticleBlockInput[] {
   const blockInputs: ArticleBlockInput[] = [];
   const decodedHtml = decodeAmazonShortcodeText(html);
@@ -793,7 +797,7 @@ export async function generateMetadata({ params, searchParams }: ArticlePageProp
 
   try {
     const article = await getCachedArticleBySlugOrId(resolvedParams.id, draftKey);
-    const title = article.metaTitle || `${article.title}｜毎日を楽に生きる`;
+    const title = removeSiteTitleSuffix(article.metaTitle || article.title);
     const description = article.metaDescription || getArticleSummary(article);
     const image = article.ogImage?.url || article.eyecatch?.url;
     const shouldNoIndex = getShouldNoIndex(article, draftKey);
@@ -817,7 +821,7 @@ export async function generateMetadata({ params, searchParams }: ArticlePageProp
     };
   } catch {
     return {
-      title: "記事が見つかりません｜毎日を楽に生きる",
+      title: "記事が見つかりません",
       robots: {
         index: false,
         follow: false

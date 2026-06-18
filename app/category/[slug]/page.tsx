@@ -87,7 +87,7 @@ export async function generateMetadata({
 
   if (!selectedCategory || selectedCategory === "広告") {
     return {
-      title: "カテゴリが見つかりません｜毎日を楽に生きる",
+      title: "カテゴリが見つかりません",
       robots: {
         index: false,
         follow: false
@@ -98,7 +98,7 @@ export async function generateMetadata({
   const selectedCategoryLabel = getCategoryDisplayName(selectedCategory);
 
   return {
-    title: `${selectedCategoryLabel}の記事｜毎日を楽に生きる`,
+    title: `${selectedCategoryLabel}の記事`,
     description: `${selectedCategoryLabel}カテゴリの記事一覧です。暮らしを少し楽にする実用情報をまとめています。`,
     alternates: {
       canonical: `/category/${resolvedParams.slug}`
