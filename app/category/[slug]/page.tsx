@@ -10,6 +10,16 @@ import {
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
+import { SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
+import {
+  categoryAliasMap,
+  categoryBackground,
+  categoryNames,
+  categorySlugMap,
+  getCategoryDisplayName,
+  getCategoryFromSlug,
+  tagColor
+} from "@/src/libs/site-config";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
@@ -54,95 +64,6 @@ type ArticleWithCmsAliases = Article & {
 };
 
 const ARTICLES_PER_PAGE = 8;
-
-const categorySlugMap: Record<MainCategory, string> = {
-  暮らし: "kurashi",
-  防災: "bousai",
-  家電: "kaden",
-  お金: "okane",
-  ライフスタイル: "lifestyle",
-  リラックス: "relax",
-  広告: "ad"
-};
-
-const categoryTitleMap: Record<string, MainCategory> = {
-  kurashi: "暮らし",
-  bousai: "防災",
-  kaden: "家電",
-  okane: "お金",
-  lifestyle: "ライフスタイル",
-  relax: "リラックス",
-  ad: "広告"
-};
-
-const categoryDisplayName: Partial<Record<MainCategory, string>> = {
-  お金: "ガジェット・機材",
-  リラックス: "便利グッズ"
-};
-
-const categoryAliasMap: Record<string, MainCategory> = {
-  "ガジェット・機材": "お金",
-  便利グッズ: "リラックス"
-};
-
-function getCategoryHref(category: MainCategory) {
-  return `/category/${categorySlugMap[category]}`;
-}
-
-function getCategoryFromSlug(slug: string) {
-  return categoryTitleMap[slug];
-}
-
-function getCategoryDisplayName(category: MainCategory | string) {
-  return categoryDisplayName[category as MainCategory] || category;
-}
-
-const categories: Array<{ name: string; key: "top" | MainCategory; href: string }> = [
-  { name: "トップ", key: "top", href: "/" },
-  { name: "暮らし", key: "暮らし", href: getCategoryHref("暮らし") },
-  { name: "防災", key: "防災", href: getCategoryHref("防災") },
-  { name: "家電", key: "家電", href: getCategoryHref("家電") },
-  { name: getCategoryDisplayName("お金"), key: "お金", href: getCategoryHref("お金") },
-  { name: getCategoryDisplayName("リラックス"), key: "リラックス", href: getCategoryHref("リラックス") },
-  { name: "ライフスタイル", key: "ライフスタイル", href: getCategoryHref("ライフスタイル") }
-];
-
-const siteInfoLinks = [
-  { name: "運営者情報", href: "/about" },
-  { name: "プライバシーポリシー", href: "/privacy" },
-  { name: "免責事項", href: "/disclaimer" },
-  { name: "お問い合わせ", href: "/contact" }
-];
-
-const tagColor: Record<string, string> = {
-  暮らし: "#C76A2A",
-  防災: "#3B6F9E",
-  家電: "#64748B",
-  お金: "#D08A24",
-  ライフスタイル: "#7A9A75",
-  リラックス: "#6F9DB5",
-  広告: "#B85C1E"
-};
-
-const categoryBackground: Record<string, string> = {
-  暮らし: "linear-gradient(135deg,#FFF4E6,#F1D7B6,#E8BE86)",
-  防災: "linear-gradient(135deg,#EAF3FA,#D8EAF6,#CFE3F2)",
-  家電: "linear-gradient(135deg,#F9FAFB,#E5E7EB,#D1D5DB)",
-  お金: "linear-gradient(135deg,#FFF7ED,#F0D2A7,#E7B875)",
-  ライフスタイル: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
-  リラックス: "linear-gradient(135deg,#F0F8FA,#EAF3FA,#D6E9F2)",
-  広告: "linear-gradient(135deg,#FFF4E6,#F0E8D8,#EAF3FA)"
-};
-
-const categoryNames: MainCategory[] = [
-  "暮らし",
-  "防災",
-  "家電",
-  "お金",
-  "ライフスタイル",
-  "リラックス",
-  "広告"
-];
 
 const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
 
@@ -565,44 +486,6 @@ function Pagination({
   );
 }
 
-function SiteHeader({ activeCategory }: { activeCategory?: string }) {
-  return (
-    <>
-      <header className="site-header">
-        <div className="decor-band top" />
-        <div className="decor-band bottom" />
-        <div className="header-info-links">
-          <Link href="/privacy">プライバシーポリシー</Link>
-          <Link href="/contact">お問い合わせ</Link>
-        </div>
-        <div className="title-wrap">
-          <div className="site-badge">家庭の実用メディア</div>
-          <h1 className="site-title">毎日を楽に生きる</h1>
-          <p className="site-subtitle">家のことを少しラクにする、家事・防災・ガジェット・機材・便利グッズの整理帖</p>
-        </div>
-      </header>
-
-      <nav className="nav">
-        <div className="nav-list">
-          {categories.map((category) => (
-            <Link
-              key={category.key}
-              href={category.href}
-              className={
-                activeCategory === category.key || (!activeCategory && category.key === "top")
-                  ? "nav-item active"
-                  : "nav-item"
-              }
-            >
-              {category.name}
-            </Link>
-          ))}
-        </div>
-      </nav>
-    </>
-  );
-}
-
 function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
   const category = getArticleCategory(article);
   const accent = tagColor[category] || "#C76A2A";
@@ -796,36 +679,6 @@ function EmptyState() {
   );
 }
 
-function SiteFooter() {
-  return (
-    <footer className="footer">
-      <div className="footer-inner">
-        <div>
-          <h3 className="footer-heading">カテゴリ</h3>
-          <div className="footer-links">
-            {categories.map((category) => (
-              <Link key={category.key} className="footer-link" href={category.href}>
-                {category.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h3 className="footer-heading footer-heading-sub">サイト情報</h3>
-          <div className="footer-links">
-            {siteInfoLinks.map((link) => (
-              <Link key={link.href} className="footer-link" href={link.href}>
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="footer-bottom">© 毎日を楽に生きる</div>
-    </footer>
-  );
-}
-
 export default async function CategoryPage({
   params,
   searchParams
@@ -887,7 +740,7 @@ export default async function CategoryPage({
 
   return (
     <div className="page">
-      <SiteHeader activeCategory={selectedCategory} />
+      <SiteHeader activeCategory={selectedCategory} titleAs="h1" />
 
       <main className="container">
         <div className="layout">

@@ -13,6 +13,17 @@ import {
   type MainCategory
 } from "@/src/libs/microcms";
 import { getAmazonProductByAsin } from "@/src/libs/amazon";
+import { SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
+import {
+  DEFAULT_CATEGORY,
+  SITE_URL,
+  categoryAliasMap,
+  categoryBackground,
+  categoryNames,
+  getCategoryDisplayName,
+  getCategoryHref,
+  tagColor
+} from "@/src/libs/site-config";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
@@ -92,101 +103,6 @@ type ArticleBlock =
     };
 
 type ArticleBlockInput = HtmlBlockInput | AmazonBlockInput;
-
-const SITE_URL = "https://mainitiwo.com";
-const DEFAULT_CATEGORY: MainCategory = "暮らし";
-
-const categorySlugMap: Record<MainCategory, string> = {
-  暮らし: "kurashi",
-  防災: "bousai",
-  家電: "kaden",
-  お金: "okane",
-  ライフスタイル: "lifestyle",
-  リラックス: "relax",
-  広告: "ad"
-};
-
-const categoryDisplayName: Partial<Record<MainCategory, string>> = {
-  お金: "ガジェット・機材",
-  リラックス: "便利グッズ"
-};
-
-const categoryAliasMap: Record<string, MainCategory> = {
-  "ガジェット・機材": "お金",
-  便利グッズ: "リラックス"
-};
-
-function getCategoryHref(category: MainCategory) {
-  if (category === "広告") {
-    return "/";
-  }
-
-  return `/category/${categorySlugMap[category]}`;
-}
-
-function getCategoryDisplayName(category: MainCategory | string) {
-  return categoryDisplayName[category as MainCategory] || category;
-}
-
-const categoryConfig: Record<
-  MainCategory,
-  { color: string; background: string; href?: string }
-> = {
-  暮らし: {
-    color: "#C76A2A",
-    background: "linear-gradient(135deg,#FFF4E6,#F1D7B6,#E8BE86)",
-    href: getCategoryHref("暮らし")
-  },
-  防災: {
-    color: "#3B6F9E",
-    background: "linear-gradient(135deg,#EAF3FA,#D8EAF6,#CFE3F2)",
-    href: getCategoryHref("防災")
-  },
-  家電: {
-    color: "#64748B",
-    background: "linear-gradient(135deg,#F9FAFB,#E5E7EB,#D1D5DB)",
-    href: getCategoryHref("家電")
-  },
-  お金: {
-    color: "#D08A24",
-    background: "linear-gradient(135deg,#FFF7ED,#F0D2A7,#E7B875)",
-    href: getCategoryHref("お金")
-  },
-  リラックス: {
-    color: "#6F9DB5",
-    background: "linear-gradient(135deg,#F0F8FA,#EAF3FA,#D6E9F2)",
-    href: getCategoryHref("リラックス")
-  },
-  ライフスタイル: {
-    color: "#7A9A75",
-    background: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
-    href: getCategoryHref("ライフスタイル")
-  },
-  広告: {
-    color: "#B85C1E",
-    background: "linear-gradient(135deg,#FFF4E6,#F0E8D8,#EAF3FA)"
-  }
-};
-
-const categories = [
-  { name: "トップ", key: "top", href: "/" },
-  ...Object.entries(categoryConfig)
-    .filter(([, config]) => config.href)
-    .map(([name, config]) => ({
-      name: getCategoryDisplayName(name),
-      key: name,
-      href: config.href || "/"
-    }))
-];
-
-const siteInfoLinks = [
-  { name: "運営者情報", href: "/about" },
-  { name: "プライバシーポリシー", href: "/privacy" },
-  { name: "免責事項", href: "/disclaimer" },
-  { name: "お問い合わせ", href: "/contact" }
-];
-
-const categoryNames = Object.keys(categoryConfig) as MainCategory[];
 const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
 const japaneseDateFormatter = new Intl.DateTimeFormat("ja-JP", {
   year: "numeric",
@@ -202,11 +118,11 @@ const shortcodeAttributeNames = {
 };
 
 function getCategoryColor(category: MainCategory) {
-  return categoryConfig[category]?.color || categoryConfig[DEFAULT_CATEGORY].color;
+  return tagColor[category] || tagColor[DEFAULT_CATEGORY];
 }
 
 function getCategoryBackground(category: MainCategory) {
-  return categoryConfig[category]?.background || categoryConfig[DEFAULT_CATEGORY].background;
+  return categoryBackground[category] || categoryBackground[DEFAULT_CATEGORY];
 }
 
 function escapeHtmlAttribute(value: string) {
@@ -833,38 +749,6 @@ function AmazonCard({ asin, title, description, imageUrl, amazonUrl, rakutenUrl 
   );
 }
 
-function SiteHeader() {
-  return (
-    <>
-      <header className="site-header">
-        <div className="decor-band top" />
-        <div className="decor-band bottom" />
-        <div className="header-info-links">
-          <Link href="/privacy">プライバシーポリシー</Link>
-          <Link href="/contact">お問い合わせ</Link>
-        </div>
-        <div className="title-wrap">
-          <div className="site-badge">家庭の実用メディア</div>
-          <div className="site-title">毎日を楽に生きる</div>
-          <p className="site-subtitle">
-            家のことを少しラクにする、家事・防災・ガジェット・機材・便利グッズの整理帖
-          </p>
-        </div>
-      </header>
-
-      <nav className="nav">
-        <div className="nav-list">
-          {categories.map((category) => (
-            <Link key={category.key} href={category.href} className="nav-item">
-              {category.name}
-            </Link>
-          ))}
-        </div>
-      </nav>
-    </>
-  );
-}
-
 function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
   const category = getArticleCategory(article);
   const accent = getCategoryColor(category);
@@ -895,35 +779,6 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
       <div className="cup-shape" />
       <div className="soft-orb" />
     </div>
-  );
-}
-
-function SiteFooter() {
-  return (
-    <footer className="footer">
-      <div className="footer-inner">
-        <div>
-          <h3 className="footer-heading">カテゴリ</h3>
-          <div className="footer-links">
-            {categories.map((category) => (
-              <Link key={category.key} className="footer-link" href={category.href}>
-                {category.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h3 className="footer-heading footer-heading-sub">サイト情報</h3>
-          <div className="footer-links">
-            {siteInfoLinks.map((link) => (
-              <Link key={link.href} className="footer-link" href={link.href}>
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    </footer>
   );
 }
 

@@ -4,11 +4,10 @@ import {
   getPublishedDate,
   type Article
 } from "@/src/libs/microcms";
+import { SITE_URL, categories, siteInfoLinks } from "@/src/libs/site-config";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
-
-const SITE_URL = "https://mainitiwo.com";
 
 type ArticleForSitemap = Article & {
   noIndex?: boolean;
@@ -23,16 +22,10 @@ type ArticleForSitemap = Article & {
 
 const staticUrls = [
   "/",
-  "/about",
-  "/privacy",
-  "/disclaimer",
-  "/contact",
-  "/category/kurashi",
-  "/category/bousai",
-  "/category/kaden",
-  "/category/okane",
-  "/category/lifestyle",
-  "/category/relax"
+  ...siteInfoLinks.map((link) => link.href),
+  ...categories
+    .filter((category) => category.key !== "top")
+    .map((category) => category.href)
 ];
 
 function escapeXml(value: string) {

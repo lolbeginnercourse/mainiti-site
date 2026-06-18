@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "運営者情報｜毎日を楽に生きる",
+  title: "運営者情報",
   description:
     "毎日を楽に生きるの運営方針、編集方針、掲載内容についてのページです。",
   alternates: {
