@@ -12,6 +12,7 @@ import {
 } from "@/src/libs/microcms";
 import { SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
 import {
+  categories,
   categoryAliasMap,
   categoryBackground,
   categoryNames,
@@ -217,6 +218,13 @@ function getArticleSummary(article: ArticleWithCmsAliases) {
   return article.summary || article.description || "";
 }
 
+function getCardSummary(article: ArticleWithCmsAliases) {
+  const summary = stripHtml(getArticleSummary(article));
+  const firstSentence = summary.match(/^.+?[。！？!?]/)?.[0];
+
+  return firstSentence || summary;
+}
+
 function getArticleImageUrl(article: ArticleWithCmsAliases, width = 800) {
   const imageUrl = article.eyecatch?.url || article.ogImage?.url || "";
   return getOptimizedImageUrl(imageUrl, width);
@@ -233,22 +241,6 @@ function getArticleTags(article: ArticleWithCmsAliases) {
   return normalizedTags
     .map((tag) => String(tag).replace(/^#/, "").trim())
     .filter((tag) => tag && !hiddenTags.has(tag));
-}
-
-function mergeUniqueArticles(
-  primaryArticles: ArticleWithCmsAliases[],
-  fallbackArticles: ArticleWithCmsAliases[]
-) {
-  const seen = new Set<string>();
-
-  return [...primaryArticles, ...fallbackArticles].filter((article) => {
-    const titleKey = normalizeSearchKeyword(article.title);
-    const keys = [article.id, titleKey].filter(Boolean);
-
-    if (keys.some((key) => seen.has(key))) return false;
-    keys.forEach((key) => seen.add(key));
-    return true;
-  });
 }
 
 function normalizeSearchKeyword(value?: string) {
@@ -519,45 +511,11 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
   );
 }
 
-function ArticleThumb({
-  article,
-  className
-}: {
-  article: ArticleWithCmsAliases;
-  className: string;
-}) {
-  const category = getArticleCategory(article);
-  const imageUrl = getArticleImageUrl(article, 240);
-  const fallbackBackground = categoryBackground[category] || categoryBackground["暮らし"];
-
-  if (imageUrl) {
-    return (
-      <div className={`${className} article-thumb has-image`}>
-        <img
-          src={imageUrl}
-          alt={getArticleImageAlt(article)}
-          className="article-thumb-image"
-          loading="lazy"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`${className} article-thumb thumb-fallback`}
-      style={{ background: fallbackBackground }}
-      aria-label={`${getCategoryDisplayName(category)}の記事`}
-    >
-      <span>{getCategoryDisplayName(category)}</span>
-    </div>
-  );
-}
-
 function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
   const category = getArticleCategory(article);
   const tags = getArticleTags(article);
   const articlePath = getArticlePath(article);
+  const summary = getCardSummary(article);
 
   return (
     <article className="card category-card">
@@ -571,6 +529,7 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
 
         <div className="card-body">
           <div className="card-title">{article.title}</div>
+          {summary ? <p className="card-summary">{summary}</p> : null}
         </div>
 
         <div className="card-footer-area">
@@ -591,76 +550,32 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
   );
 }
 
-function InlineAd({ article }: { article?: ArticleWithCmsAliases }) {
-  if (!article) return null;
-
-  return (
-    <Link className="inline-ad-card" href={getArticlePath(article)}>
-      <ArticleThumb article={article} className="inline-ad-thumb" />
-      <div className="inline-ad-content">
-        <div className="inline-ad-label">{article.adLabel || "暮らしのおすすめ"}</div>
-        <div className="inline-ad-title">{article.title}</div>
-        <div className="inline-ad-text">{getArticleSummary(article)}</div>
-      </div>
-    </Link>
-  );
-}
-
-function Sidebar({
-  popularArticles,
-  adArticle
-}: {
-  popularArticles: ArticleWithCmsAliases[];
-  adArticle?: ArticleWithCmsAliases;
-}) {
+function Sidebar() {
   return (
     <aside>
       <div className="sidebar-stack">
-        <div className="ranking">
-          <h3>よく読まれている記事</h3>
-
-          {popularArticles.slice(0, 3).map((article, index) => {
-            const rankColors = ["#B85C1E", "#C76A2A", "#7A9A75"];
-
-            return (
-              <Link key={article.id} className="rank-item clickable-row" href={getArticlePath(article)}>
-                <div className="rank-num" style={{ background: rankColors[index] || "#B85C1E" }}>
-                  {index + 1}
-                </div>
-
-                <ArticleThumb article={article} className="rank-thumb" />
-
-                <div className="rank-content">
-                  <div className="rank-title">{article.title}</div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {adArticle ? (
-          <div className="side-card ad-box">
-            <ArticleThumb article={adArticle} className="side-ad-thumb" />
-            <div>
-              <div className="ad-label">{adArticle.adLabel || "暮らしのおすすめ"}</div>
-              <div className="ad-title">{adArticle.title}</div>
-              <div className="ad-text">{getArticleSummary(adArticle)}</div>
-            </div>
-            <Link className="ad-button" href={getArticlePath(adArticle)}>
-              {adArticle.adButtonText || "詳しく見る"}
-            </Link>
-          </div>
-        ) : null}
-
         <div className="side-card editor-card">
           <h3>編集部について</h3>
           <p className="side-card-text">
-            家事、防災、家電・ガジェット選びを、一般家庭の目線で試しやすく整理しています。
-            購入を急がせず、注意点と向き不向きもあわせて掲載します。
+            毎日の暮らしで迷いやすい小さな不便や、ガジェット・機材、便利グッズ選びを一般家庭の目線で整理しています。
+            原因、注意点、向いている人、向いていない人を短く確認できるようにまとめています。
           </p>
           <Link className="read-more" href="/about">
             運営方針を見る →
           </Link>
+        </div>
+
+        <div className="side-card">
+          <h3>目的別に探す</h3>
+          <div className="tag-cloud">
+            {categories
+              .filter((category) => category.key !== "top")
+              .map((category) => (
+                <Link key={category.key} className="tag-cloud-button" href={category.href}>
+                  {category.name}
+                </Link>
+              ))}
+          </div>
         </div>
       </div>
     </aside>
@@ -705,11 +620,7 @@ export default async function CategoryPage({
   }
 
   const normalArticles = articles.filter((article) => !article.isAd);
-  const adArticles = articles.filter((article) => article.isAd);
 
-  const popularFiltered = normalArticles.filter((article) => article.isPopular);
-
-  const popularArticles = mergeUniqueArticles(popularFiltered, normalArticles).slice(0, 3);
   const visibleArticles = normalArticles.filter((article) => {
     const articleCategories = getArticleCategories(article);
     const tags = getArticleTags(article);
@@ -726,11 +637,6 @@ export default async function CategoryPage({
   const currentPage = clampPage(requestedPage, totalPages);
   const startIndex = (currentPage - 1) * ARTICLES_PER_PAGE;
   const pagedArticles = visibleArticles.slice(startIndex, startIndex + ARTICLES_PER_PAGE);
-
-  const mainCards = pagedArticles.slice(0, 4);
-  const newCards = pagedArticles.slice(4, 8);
-  const inlineAdArticle = adArticles[0];
-  const sideAdArticle = adArticles[1] || adArticles[0];
 
   const title = searchQuery
     ? `「${searchQuery}」の検索結果`
@@ -756,23 +662,10 @@ export default async function CategoryPage({
             {visibleArticles.length > 0 ? (
               <>
                 <div className="cards">
-                  {mainCards.map((article) => (
+                  {pagedArticles.map((article) => (
                     <ArticleCard key={article.id} article={article} />
                   ))}
-
-                  {pagedArticles.length > 4 ? <InlineAd article={inlineAdArticle} /> : null}
                 </div>
-
-                {newCards.length > 0 ? (
-                  <>
-                    <h2 className="section-title sub">新着記事</h2>
-                    <div className="cards">
-                      {newCards.map((article) => (
-                        <ArticleCard key={article.id} article={article} />
-                      ))}
-                    </div>
-                  </>
-                ) : null}
 
                 <Pagination
                   slug={resolvedParams.slug}
@@ -787,10 +680,7 @@ export default async function CategoryPage({
             )}
           </section>
 
-          <Sidebar
-            popularArticles={popularArticles}
-            adArticle={sideAdArticle}
-          />
+          <Sidebar />
         </div>
       </main>
 
