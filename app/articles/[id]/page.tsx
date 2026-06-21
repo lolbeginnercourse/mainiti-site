@@ -103,7 +103,17 @@ type ArticleBlock =
     };
 
 type ArticleBlockInput = HtmlBlockInput | AmazonBlockInput;
-const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
+const hiddenTags = new Set([
+  "TOP",
+  "top",
+  "トップ",
+  "おすすめ",
+  "人気",
+  "防災",
+  "家電",
+  "お金",
+  "リラックス"
+]);
 const japaneseDateFormatter = new Intl.DateTimeFormat("ja-JP", {
   year: "numeric",
   month: "2-digit",

@@ -83,7 +83,17 @@ type ArticleWithCmsAliases = Article & {
 
 const ARTICLES_PER_PAGE = 8;
 
-const hiddenTags = new Set(["TOP", "top", "トップ", "おすすめ", "人気"]);
+const hiddenTags = new Set([
+  "TOP",
+  "top",
+  "トップ",
+  "おすすめ",
+  "人気",
+  "防災",
+  "家電",
+  "お金",
+  "リラックス"
+]);
 
 function getCategoryTextCandidates(value: unknown): string[] {
   if (!value) return [];
