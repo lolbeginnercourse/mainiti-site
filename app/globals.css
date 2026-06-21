@@ -11,7 +11,7 @@ body {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #2f332f;
+  color: #212529;
 }
 
 img {
@@ -28,23 +28,19 @@ button {
 }
 
 :root {
-  --main: #C76A2A;
-  --main-dark: #B85C1E;
-  --card: rgba(255,255,255,0.94);
-  --text: #26313f;
-  --muted: #667085;
+  --main: #495057;
+  --main-dark: #343A40;
+  --card: #FFFFFF;
+  --text: #212529;
+  --muted: #6C757D;
+  --line: #DEE2E6;
 }
 
 .page {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(255,255,255,0.96), transparent 34%),
-    radial-gradient(circle at 88% 18%, rgba(255,226,189,0.46), transparent 30%),
-    radial-gradient(circle at 8% 72%, rgba(210,231,216,0.58), transparent 34%),
-    radial-gradient(circle at 92% 86%, rgba(224,239,255,0.48), transparent 32%),
-    linear-gradient(180deg, #FFF8EF 0%, #F8F1E8 46%, #EAF3E7 100%);
+  background: #F8F9FA;
 }
 
 .page::before {
@@ -53,11 +49,11 @@ button {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.52;
+  opacity: 0.36;
   background-image:
-    radial-gradient(circle at 18px 18px, rgba(199,106,42,0.10) 0 2px, transparent 3px),
-    radial-gradient(circle at 84px 62px, rgba(59,111,158,0.08) 0 2px, transparent 3px),
-    radial-gradient(circle at 132px 108px, rgba(122,154,117,0.08) 0 2px, transparent 3px);
+    radial-gradient(circle at 18px 18px, rgba(73,80,87,0.08) 0 2px, transparent 3px),
+    radial-gradient(circle at 84px 62px, rgba(108,117,125,0.07) 0 2px, transparent 3px),
+    radial-gradient(circle at 132px 108px, rgba(173,181,189,0.07) 0 2px, transparent 3px);
   background-size: 170px 150px;
 }
 
@@ -77,10 +73,9 @@ button {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at 16% 24%, rgba(199,106,42,0.20), transparent 26%),
-    radial-gradient(circle at 84% 28%, rgba(59,111,158,0.16), transparent 25%),
-    radial-gradient(circle at 54% 94%, rgba(122,154,117,0.12), transparent 35%),
-    linear-gradient(180deg, #FFF8EF 0%, #ffffff 56%, #F4EFE7 100%);
+    radial-gradient(circle at 18% 24%, rgba(255,255,255,0.88), transparent 28%),
+    radial-gradient(circle at 86% 28%, rgba(222,226,230,0.54), transparent 25%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8F9FA 100%);
 }
 
 .decor-band {
@@ -90,12 +85,12 @@ button {
   height: 24px;
   background: repeating-linear-gradient(
     90deg,
-    rgba(199,106,42,0.18) 0 22px,
-    rgba(120,113,108,0.12) 22px 44px,
-    rgba(122,154,117,0.12) 44px 66px,
-    rgba(59,111,158,0.10) 66px 88px
+    rgba(73,80,87,0.10) 0 22px,
+    rgba(173,181,189,0.12) 22px 44px,
+    rgba(222,226,230,0.16) 44px 66px,
+    rgba(248,249,250,0.24) 66px 88px
   );
-  opacity: 0.92;
+  opacity: 0.82;
 }
 
 .decor-band.top {
@@ -114,7 +109,7 @@ button {
   display: flex;
   align-items: center;
   gap: 20px;
-  color: #3d2b22;
+  color: #212529;
   font-size: 24px;
   font-weight: 900;
   line-height: 1.2;
@@ -129,8 +124,8 @@ button {
   z-index: 2;
   padding: 9px 36px 11px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 18px 38px rgba(97,70,40,0.14), inset 0 0 22px rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 18px 38px rgba(33,37,41,0.10), inset 0 0 22px rgba(255,255,255,0.95);
   backdrop-filter: blur(8px);
   text-align: center;
 }
@@ -142,8 +137,8 @@ button {
   margin-bottom: 5px;
   padding: 3px 11px;
   border-radius: 999px;
-  background: rgba(199,106,42,0.10);
-  color: #9a5b16;
+  background: #E9ECEF;
+  color: #495057;
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -155,14 +150,14 @@ button {
   font-size: 28px;
   line-height: 1.12;
   letter-spacing: 0.14em;
-  color: #3d2b22;
+  color: #212529;
 }
 
 .site-subtitle {
   margin: 5px 0 0;
   font-size: 12px;
   letter-spacing: 0.08em;
-  color: #7c5f46;
+  color: #495057;
   font-weight: 700;
 }
 
@@ -171,8 +166,8 @@ button {
   width: 100%;
   display: block;
   padding: 0;
-  background: rgba(255,255,255,0.88);
-  box-shadow: 0 6px 22px rgba(50,44,38,0.05);
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 6px 22px rgba(33,37,41,0.05);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -227,7 +222,7 @@ button {
   justify-content: center;
   white-space: nowrap;
   font-size: 15px;
-  color: #4b5563;
+  color: #495057;
   border-radius: 999px;
   padding: 0 14px;
 }
@@ -236,7 +231,7 @@ button {
   color: #ffffff;
   background: linear-gradient(135deg,var(--main),var(--main-dark));
   font-weight: 800;
-  box-shadow: 0 8px 18px rgba(199,106,42,0.22);
+  box-shadow: 0 8px 18px rgba(33,37,41,0.18);
 }
 
 .container {
@@ -269,7 +264,7 @@ button {
   height: 30px;
   border-radius: 99px;
   background: linear-gradient(180deg,var(--main),var(--main-dark));
-  box-shadow: 0 6px 14px rgba(199,106,42,0.2);
+  box-shadow: 0 6px 14px rgba(33,37,41,0.16);
 }
 
 .section-title.sub {
@@ -282,7 +277,7 @@ button {
   flex-wrap: wrap;
   gap: 8px;
   margin: 0 0 18px;
-  color: #7a6b5c;
+  color: #495057;
   font-size: 12px;
   font-weight: 900;
 }
@@ -293,8 +288,8 @@ button {
   min-height: 28px;
   border-radius: 999px;
   padding: 5px 10px;
-  background: rgba(255,255,255,0.72);
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.11);
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .search-box {
@@ -319,11 +314,11 @@ button {
   outline: none;
   border-radius: 14px;
   padding: 0 15px;
-  background: rgba(255,255,255,0.9);
+  background: #FFFFFF;
   color: var(--text);
   font-size: 14px;
   font-weight: 700;
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.16), 0 8px 20px rgba(31,41,51,0.05);
+  box-shadow: inset 0 0 0 1px var(--line), 0 8px 20px rgba(33,37,41,0.05);
 }
 
 .search-input::placeholder {
@@ -332,7 +327,7 @@ button {
 
 .search-input:focus {
   background: #ffffff;
-  box-shadow: inset 0 0 0 2px rgba(199,106,42,0.28), 0 8px 20px rgba(31,41,51,0.07);
+  box-shadow: inset 0 0 0 2px #495057, 0 8px 20px rgba(33,37,41,0.07);
 }
 
 .search-button {
@@ -345,14 +340,14 @@ button {
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(199,106,42,0.18);
+  box-shadow: 0 8px 18px rgba(33,37,41,0.16);
 }
 
 .search-clear {
   display: inline-flex;
   width: fit-content;
   margin-top: 9px;
-  color: #8a5a2d;
+  color: #495057;
   font-size: 12px;
   font-weight: 800;
 }
@@ -368,7 +363,7 @@ button {
 .ranking,
 .inline-ad-card {
   background: var(--card);
-  box-shadow: 0 12px 30px rgba(31,41,51,0.08);
+  box-shadow: 0 12px 30px rgba(33,37,41,0.08);
 }
 
 .card {
@@ -383,7 +378,7 @@ button {
 .clickable-row:hover,
 .inline-ad-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 18px 36px rgba(31,41,51,0.13);
+  box-shadow: 0 18px 36px rgba(33,37,41,0.12);
 }
 
 .card-link {
@@ -444,8 +439,8 @@ button {
   margin-top: 14px;
   padding: 7px 12px;
   border-radius: 999px;
-  background: rgba(199,106,42,0.10);
-  color: #b45309;
+  background: #E9ECEF;
+  color: #343A40;
   font-size: 13px;
   font-weight: 900;
 }
@@ -473,7 +468,7 @@ button {
 .thumb-fallback {
   display: grid;
   place-items: center;
-  color: #6b5a48;
+  color: #495057;
   font-size: 12px;
   font-weight: 900;
   text-align: center;
@@ -509,7 +504,7 @@ button {
 
 .side-card-text {
   margin: 0;
-  color: #626b75;
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.8;
 }
@@ -577,11 +572,11 @@ button {
 .tag-cloud-button {
   border-radius: 999px;
   padding: 9px 10px;
-  background: rgba(255,255,255,0.72);
-  color: #62564c;
+  background: #FFFFFF;
+  color: #495057;
   font-size: 13px;
   font-weight: 900;
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.12);
+  box-shadow: inset 0 0 0 1px var(--line);
   text-align: center;
 }
 
@@ -630,7 +625,7 @@ button {
   align-items: start;
   padding: 12px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.62);
+  background: #FFFFFF;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.035);
 }
 
@@ -658,8 +653,8 @@ button {
 .empty-state {
   padding: 34px;
   border-radius: 22px;
-  background: rgba(255,255,255,0.78);
-  box-shadow: 0 12px 30px rgba(31,41,51,0.08);
+  background: #FFFFFF;
+  box-shadow: 0 12px 30px rgba(33,37,41,0.08);
 }
 
 .empty-state h3 {
@@ -682,14 +677,14 @@ button {
   margin: 32px 0 0;
   padding: 16px;
   border-radius: 20px;
-  background: rgba(255,255,255,0.72);
-  box-shadow: 0 12px 30px rgba(31,41,51,0.07);
+  background: #FFFFFF;
+  box-shadow: 0 12px 30px rgba(33,37,41,0.07);
 }
 
 .pagination-status {
   justify-self: center;
   order: 2;
-  color: #7a6b5c;
+  color: #495057;
   font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
@@ -719,11 +714,11 @@ button {
   justify-content: center;
   border-radius: 999px;
   padding: 0 12px;
-  background: rgba(255,255,255,0.82);
-  color: #5b6470;
+  background: #FFFFFF;
+  color: #495057;
   font-size: 13px;
   font-weight: 900;
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.10);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .pagination-link {
@@ -739,13 +734,13 @@ button {
   min-width: 138px;
   background: linear-gradient(135deg,var(--main),var(--main-dark));
   color: #ffffff;
-  box-shadow: 0 8px 18px rgba(199,106,42,0.18);
+  box-shadow: 0 8px 18px rgba(33,37,41,0.16);
 }
 
 .pagination-number.active {
   background: linear-gradient(135deg,var(--main),var(--main-dark));
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(199,106,42,0.18);
+  box-shadow: 0 6px 14px rgba(33,37,41,0.16);
 }
 
 .pagination-link.disabled {
@@ -773,7 +768,7 @@ button {
   padding: 11px 19px;
   font-weight: 900;
   color: var(--main);
-  box-shadow: 0 10px 24px rgba(31,41,51,0.09);
+  box-shadow: 0 10px 24px rgba(33,37,41,0.09);
   margin-bottom: 24px;
 }
 
@@ -781,7 +776,7 @@ button {
   background: var(--card);
   border-radius: 26px;
   overflow: hidden;
-  box-shadow: 0 16px 38px rgba(31,41,51,0.12);
+  box-shadow: 0 16px 38px rgba(33,37,41,0.10);
 }
 
 .visual-box {
@@ -983,13 +978,13 @@ button {
   margin-top: 20px;
   padding: 18px 20px;
   border-radius: 18px;
-  background: rgba(255,255,255,0.74);
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.12);
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .article-points-title {
   margin: 0 0 10px;
-  color: #8a5a2d;
+  color: #343A40;
   font-size: 13px;
   font-weight: 900;
 }
@@ -1032,26 +1027,26 @@ button {
 .sub-tag {
   border-radius: 999px;
   padding: 5px 10px;
-  background: rgba(255,255,255,0.74);
-  color: #6b5a48;
+  background: #FFFFFF;
+  color: #495057;
   font-size: 12px;
   font-weight: 800;
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.13);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .toc-box {
   margin-top: 24px;
   padding: 22px;
   border-radius: 20px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,248,244,0.96));
-  box-shadow: 0 10px 24px rgba(31,41,51,0.06);
+  background: #FFFFFF;
+  box-shadow: 0 10px 24px rgba(33,37,41,0.06);
 }
 
 .toc-title {
   margin: 0 0 14px;
   font-size: 18px;
   font-weight: 900;
-  color: #3f2b21;
+  color: #212529;
 }
 
 .toc-list {
@@ -1107,7 +1102,7 @@ button {
 
 .article-body h2,
 .article-body h3 {
-  color: #26313f;
+  color: var(--text);
   scroll-margin-top: 90px;
 }
 
@@ -1115,7 +1110,7 @@ button {
   margin-top: 2.1em;
   margin-bottom: 0.8em;
   padding-bottom: 0.42em;
-  border-bottom: 1px solid rgba(199,106,42,0.18);
+  border-bottom: 1px solid var(--line);
   line-height: 1.55;
 }
 
@@ -1160,10 +1155,10 @@ button {
   align-items: center;
   padding: 18px;
   margin: 24px 0;
-  border: 1px solid #e2d8ca;
+  border: 1px solid var(--line);
   border-radius: 18px;
-  background: #fffaf3;
-  box-shadow: 0 10px 26px rgba(70, 49, 28, 0.08);
+  background: #FFFFFF;
+  box-shadow: 0 10px 26px rgba(33,37,41,0.08);
 }
 
 .product-image-area {
@@ -1174,7 +1169,7 @@ button {
   height: 132px;
   border-radius: 14px;
   background: #ffffff;
-  border: 1px solid #eadfce;
+  border: 1px solid var(--line);
   overflow: hidden;
   text-decoration: none;
 }
@@ -1194,11 +1189,11 @@ button {
   width: 100%;
   height: 100%;
   padding: 12px;
-  color: #9a6a2f;
+  color: #495057;
   font-size: 12px;
   font-weight: 900;
   text-align: center;
-  background: #fff8ed;
+  background: #F8F9FA;
 }
 
 .product-body {
@@ -1209,7 +1204,7 @@ button {
   margin: 0 0 6px;
   font-size: 12px;
   font-weight: 800;
-  color: #9a6a2f;
+  color: #495057;
 }
 
 .product-title {
@@ -1267,7 +1262,7 @@ button {
   margin: 10px 0 0;
   font-size: 11px;
   line-height: 1.6;
-  color: #7f7468;
+  color: #6C757D;
 }
 
 .related-box {
@@ -1279,7 +1274,7 @@ button {
   margin: 0 0 16px;
   font-size: 20px;
   font-weight: 900;
-  color: #26313f;
+  color: var(--text);
 }
 
 .related-list {
@@ -1292,8 +1287,8 @@ button {
   position: relative;
   border-radius: 18px;
   padding: 16px;
-  background: rgba(255,255,255,0.78);
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.10);
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .related-item::after {
@@ -1301,21 +1296,21 @@ button {
   position: absolute;
   right: 14px;
   bottom: 12px;
-  color: rgba(180,83,9,0.5);
+  color: rgba(73,80,87,0.5);
   font-weight: 900;
 }
 
 .related-tag {
   display: inline-flex;
   margin-bottom: 9px;
-  color: #b45309;
+  color: #495057;
   font-size: 12px;
   font-weight: 900;
 }
 
 .related-name {
   padding-right: 16px;
-  color: #26313f;
+  color: var(--text);
   font-size: 14px;
   font-weight: 900;
   line-height: 1.55;
@@ -1327,7 +1322,7 @@ button {
   gap: 10px;
   margin-top: 34px;
   padding-top: 24px;
-  border-top: 1px solid rgba(199,106,42,0.14);
+  border-top: 1px solid var(--line);
 }
 
 .bottom-nav-button {
@@ -1337,23 +1332,23 @@ button {
   min-height: 42px;
   border-radius: 999px;
   padding: 10px 16px;
-  background: rgba(255,255,255,0.78);
-  color: #6b5a48;
+  background: #FFFFFF;
+  color: #495057;
   font-size: 14px;
   font-weight: 900;
-  box-shadow: inset 0 0 0 1px rgba(199,106,42,0.13);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .bottom-nav-button.primary {
   background: linear-gradient(135deg,var(--main),var(--main-dark));
   color: #fff;
-  box-shadow: 0 8px 18px rgba(199,106,42,0.18);
+  box-shadow: 0 8px 18px rgba(33,37,41,0.16);
 }
 
 .footer {
   margin-top: 10px;
-  background: rgba(255,255,255,0.76);
-  box-shadow: 0 -8px 28px rgba(31,41,51,0.04);
+  background: #FFFFFF;
+  box-shadow: 0 -8px 28px rgba(33,37,41,0.04);
 }
 
 .footer-inner {
@@ -1369,7 +1364,7 @@ button {
   margin: 0 0 12px;
   font-size: 18px;
   font-weight: 900;
-  color: #3d2b22;
+  color: #212529;
 }
 
 .footer-heading-sub {
@@ -1383,7 +1378,7 @@ button {
 }
 
 .footer-link {
-  color: #626b75;
+  color: #495057;
   font-size: 18px;
 }
 

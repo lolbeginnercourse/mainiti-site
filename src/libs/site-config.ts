@@ -34,23 +34,23 @@ export const categoryAliasMap: Record<string, MainCategory> = {
 };
 
 export const tagColor: Record<string, string> = {
-  暮らし: "#C76A2A",
-  防災: "#3B6F9E",
-  家電: "#64748B",
-  お金: "#D08A24",
-  ライフスタイル: "#7A9A75",
-  リラックス: "#6F9DB5",
-  広告: "#B85C1E"
+  暮らし: "#495057",
+  防災: "#495057",
+  家電: "#495057",
+  お金: "#343A40",
+  ライフスタイル: "#6C757D",
+  リラックス: "#495057",
+  広告: "#343A40"
 };
 
 export const categoryBackground: Record<string, string> = {
-  暮らし: "linear-gradient(135deg,#FFF4E6,#F1D7B6,#E8BE86)",
-  防災: "linear-gradient(135deg,#EAF3FA,#D8EAF6,#CFE3F2)",
-  家電: "linear-gradient(135deg,#F9FAFB,#E5E7EB,#D1D5DB)",
-  お金: "linear-gradient(135deg,#FFF7ED,#F0D2A7,#E7B875)",
-  ライフスタイル: "linear-gradient(135deg,#F2F6EE,#EAF3E7,#DDEBD8)",
-  リラックス: "linear-gradient(135deg,#F0F8FA,#EAF3FA,#D6E9F2)",
-  広告: "linear-gradient(135deg,#FFF4E6,#F0E8D8,#EAF3FA)"
+  暮らし: "linear-gradient(135deg,#FFFFFF,#F1F3F5,#E9ECEF)",
+  防災: "linear-gradient(135deg,#FFFFFF,#F1F3F5,#E9ECEF)",
+  家電: "linear-gradient(135deg,#FFFFFF,#F1F3F5,#E9ECEF)",
+  お金: "linear-gradient(135deg,#FFFFFF,#F1F3F5,#DEE2E6)",
+  ライフスタイル: "linear-gradient(135deg,#FFFFFF,#F8F9FA,#E9ECEF)",
+  リラックス: "linear-gradient(135deg,#FFFFFF,#F1F3F5,#E9ECEF)",
+  広告: "linear-gradient(135deg,#FFFFFF,#F1F3F5,#DEE2E6)"
 };
 
 export const categoryNames = Object.keys(categorySlugMap) as MainCategory[];
