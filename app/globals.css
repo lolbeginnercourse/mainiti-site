@@ -942,7 +942,7 @@ button {
 .tag {
   position: absolute;
   top: 16px;
-  left: 16px;
+  right: 16px;
   color: #fff;
   padding: 7px 16px;
   border-radius: 999px;
