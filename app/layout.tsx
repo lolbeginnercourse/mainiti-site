@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 
 const siteName = "毎日を楽に生きる";
@@ -109,11 +108,9 @@ export default function RootLayout({
 
         {children}
 
-        <Script
-          id="admax-global-script"
-          src="https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7"
-          strategy="afterInteractive"
-        />
+        {/* admax */}
+        <script async src="https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7" />
+        {/* admax */}
       </body>
     </html>
   );
