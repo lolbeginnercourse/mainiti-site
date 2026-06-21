@@ -216,6 +216,20 @@ button {
   max-width: 100%;
 }
 
+.admax-slot-desktop {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .admax-slot-mobile {
+    display: none;
+  }
+
+  .admax-slot-desktop {
+    display: block;
+  }
+}
+
 .nav-list {
   width: max-content;
   min-width: max-content;

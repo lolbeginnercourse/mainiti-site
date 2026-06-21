@@ -2,8 +2,10 @@ import Link from "next/link";
 import { categories, siteInfoLinks } from "@/src/libs/site-config";
 import type { MainCategory } from "@/src/libs/microcms";
 
-const admaxTagHtml =
+const mobileAdmaxTagHtml =
   '<!-- admax --><script src="https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7"></script><!-- admax -->';
+const desktopAdmaxTagHtml =
+  '<!-- admax --><script src="https://adm.shinobi.jp/s/461b51a653437bbdd4d7abccf2acc683"></script><!-- admax -->';
 
 type SiteHeaderProps = {
   activeCategory?: "top" | MainCategory;
@@ -50,8 +52,12 @@ export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps)
       </nav>
 
       <div
-        className="admax-slot"
-        dangerouslySetInnerHTML={{ __html: admaxTagHtml }}
+        className="admax-slot admax-slot-mobile"
+        dangerouslySetInnerHTML={{ __html: mobileAdmaxTagHtml }}
+      />
+      <div
+        className="admax-slot admax-slot-desktop"
+        dangerouslySetInnerHTML={{ __html: desktopAdmaxTagHtml }}
       />
     </>
   );
