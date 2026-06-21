@@ -91,6 +91,10 @@ export default function RootLayout({
 
   return (
     <html lang="ja" className="h-full antialiased">
+      <head>
+        <link rel="preconnect" href="https://images.microcms-assets.io" />
+        <link rel="dns-prefetch" href="https://images.microcms-assets.io" />
+      </head>
       <body className="min-h-full flex flex-col">
         <script
           type="application/ld+json"

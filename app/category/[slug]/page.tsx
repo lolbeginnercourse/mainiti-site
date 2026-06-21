@@ -488,7 +488,13 @@ function Pagination({
   );
 }
 
-function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
+function VisualBox({
+  article,
+  priority = false
+}: {
+  article: ArticleWithCmsAliases;
+  priority?: boolean;
+}) {
   const category = getArticleCategory(article);
   const accent = tagColor[category] || "#C76A2A";
   const fallbackBackground = categoryBackground[category] || categoryBackground["暮らし"];
@@ -501,7 +507,9 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
           className="visual-image"
           src={imageUrl}
           alt={getArticleImageAlt(article)}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          decoding="async"
         />
       </div>
     );
@@ -521,7 +529,13 @@ function VisualBox({ article }: { article: ArticleWithCmsAliases }) {
   );
 }
 
-function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
+function ArticleCard({
+  article,
+  priority = false
+}: {
+  article: ArticleWithCmsAliases;
+  priority?: boolean;
+}) {
   const category = getArticleCategory(article);
   const tags = getArticleTags(article);
   const articlePath = getArticlePath(article);
@@ -531,7 +545,7 @@ function ArticleCard({ article }: { article: ArticleWithCmsAliases }) {
     <article className="card category-card">
       <Link href={articlePath} className="card-link" aria-label={`${article.title}を読む`}>
         <div style={{ position: "relative" }}>
-          <VisualBox article={article} />
+          <VisualBox article={article} priority={priority} />
           <span className="tag" style={{ background: tagColor[category] || "#B85C1E" }}>
             {getCategoryDisplayName(category)}
           </span>
@@ -672,8 +686,12 @@ export default async function CategoryPage({
             {visibleArticles.length > 0 ? (
               <>
                 <div className="cards">
-                  {pagedArticles.map((article) => (
-                    <ArticleCard key={article.id} article={article} />
+                  {pagedArticles.map((article, index) => (
+                    <ArticleCard
+                      key={article.id}
+                      article={article}
+                      priority={currentPage === 1 && index < 2}
+                    />
                   ))}
                 </div>
 
