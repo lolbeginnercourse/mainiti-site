@@ -78,8 +78,6 @@ export const categories: Array<{
 }> = [
   { name: "トップ", key: "top", href: "/" },
   { name: "暮らし", key: "暮らし", href: getCategoryHref("暮らし") },
-  { name: "防災", key: "防災", href: getCategoryHref("防災") },
-  { name: "家電", key: "家電", href: getCategoryHref("家電") },
   { name: getCategoryDisplayName("お金"), key: "お金", href: getCategoryHref("お金") },
   {
     name: getCategoryDisplayName("リラックス"),
