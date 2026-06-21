@@ -58,9 +58,6 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
     apple: "/apple-icon.png",
   },
-  other: {
-    "google-adsense-account": "ca-pub-7604376986662824",
-  },
 };
 
 export default function RootLayout({
@@ -112,12 +109,6 @@ export default function RootLayout({
 
         {children}
 
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7604376986662824"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
         <Script
           id="admax-global-script"
           src="https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7"
