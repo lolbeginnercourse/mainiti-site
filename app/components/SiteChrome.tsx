@@ -3,7 +3,7 @@ import { categories, siteInfoLinks } from "@/src/libs/site-config";
 import type { MainCategory } from "@/src/libs/microcms";
 
 const admaxTagHtml =
-  '<!-- admax --><script async src="https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7"></script><!-- admax -->';
+  '<!-- admax --><script src="https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7"></script><!-- admax -->';
 
 type SiteHeaderProps = {
   activeCategory?: "top" | MainCategory;
