@@ -199,6 +199,23 @@ button {
   display: none;
 }
 
+.admax-slot {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 12px;
+  background: #FFFFFF;
+  text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.admax-slot iframe,
+.admax-slot img {
+  max-width: 100%;
+}
+
 .nav-list {
   width: max-content;
   min-width: max-content;
