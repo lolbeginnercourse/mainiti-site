@@ -55,11 +55,16 @@ export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps)
         className="admax-slot admax-slot-mobile"
         dangerouslySetInnerHTML={{ __html: mobileAdmaxTagHtml }}
       />
-      <div
-        className="admax-slot admax-slot-desktop"
-        dangerouslySetInnerHTML={{ __html: desktopAdmaxTagHtml }}
-      />
     </>
+  );
+}
+
+export function DesktopAdmaxSlot() {
+  return (
+    <div
+      className="admax-slot admax-slot-desktop"
+      dangerouslySetInnerHTML={{ __html: desktopAdmaxTagHtml }}
+    />
   );
 }
 

@@ -10,7 +10,7 @@ import {
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
-import { SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
+import { DesktopAdmaxSlot, SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
 import {
   categories,
   categoryAliasMap,
@@ -601,6 +601,8 @@ function Sidebar() {
               ))}
           </div>
         </div>
+
+        <DesktopAdmaxSlot />
       </div>
     </aside>
   );
