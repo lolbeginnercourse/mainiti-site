@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { categories, siteInfoLinks } from "@/src/libs/site-config";
 import type { MainCategory } from "@/src/libs/microcms";
+import { LazyAdmaxSlot } from "@/app/components/LazyAdmaxSlot";
 
-const mobileAdmaxTagHtml =
-  '<!-- admax --><script src="https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7"></script><!-- admax -->';
-const desktopAdmaxTagHtml =
-  '<!-- admax --><script src="https://adm.shinobi.jp/s/461b51a653437bbdd4d7abccf2acc683"></script><!-- admax -->';
+const mobileAdmaxScriptSrc =
+  "https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7";
+const desktopAdmaxScriptSrc =
+  "https://adm.shinobi.jp/s/461b51a653437bbdd4d7abccf2acc683";
 
 type SiteHeaderProps = {
   activeCategory?: "top" | MainCategory;
@@ -51,9 +52,10 @@ export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps)
         </div>
       </nav>
 
-      <div
+      <LazyAdmaxSlot
         className="admax-slot admax-slot-mobile"
-        dangerouslySetInnerHTML={{ __html: mobileAdmaxTagHtml }}
+        scriptSrc={mobileAdmaxScriptSrc}
+        title="広告"
       />
     </>
   );
@@ -61,9 +63,10 @@ export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps)
 
 export function DesktopAdmaxSlot() {
   return (
-    <div
+    <LazyAdmaxSlot
       className="admax-slot admax-slot-desktop"
-      dangerouslySetInnerHTML={{ __html: desktopAdmaxTagHtml }}
+      scriptSrc={desktopAdmaxScriptSrc}
+      title="広告"
     />
   );
 }

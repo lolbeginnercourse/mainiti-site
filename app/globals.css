@@ -216,6 +216,13 @@ button {
   max-width: 100%;
 }
 
+.admax-frame {
+  width: 100%;
+  min-height: 60px;
+  display: block;
+  border: 0;
+}
+
 .admax-slot-desktop {
   display: none;
 }
@@ -227,6 +234,13 @@ button {
 
   .admax-slot-desktop {
     display: block;
+  }
+
+  .admax-slot-desktop .admax-frame {
+    width: 160px;
+    height: 600px;
+    min-height: 600px;
+    margin: 0 auto;
   }
 }
 
@@ -1170,6 +1184,8 @@ button {
   margin: 24px 0;
   text-align: center;
   overflow-x: auto;
+  content-visibility: auto;
+  contain-intrinsic-size: 80px;
 }
 
 .a8-banner-wrap img {
@@ -1190,6 +1206,8 @@ button {
   border-radius: 18px;
   background: #FFFFFF;
   box-shadow: 0 10px 26px rgba(33,37,41,0.08);
+  content-visibility: auto;
+  contain-intrinsic-size: 170px;
 }
 
 .product-image-area {
