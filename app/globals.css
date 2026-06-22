@@ -218,12 +218,6 @@ button {
 
 .admax-slot-desktop {
   display: none;
-  width: fit-content;
-  min-height: 0;
-  margin: 0 auto;
-  padding: 0;
-  background: transparent;
-  overflow: visible;
 }
 
 @media (min-width: 769px) {
