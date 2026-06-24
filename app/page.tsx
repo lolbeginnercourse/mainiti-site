@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 
+import { Fragment } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -9,7 +10,12 @@ import {
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
-import { DesktopAdmaxSlot, SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
+import {
+  DesktopAdmaxSlot,
+  InlineListAdmaxSlot,
+  SiteFooter,
+  SiteHeader
+} from "@/app/components/SiteChrome";
 import {
   categories,
   categoryAliasMap,
@@ -647,11 +653,15 @@ export default async function Home({ searchParams }: HomeProps) {
               <>
                 <div className="cards">
                   {pagedArticles.map((article, index) => (
-                    <ArticleCard
-                      key={article.id}
-                      article={article}
-                      priority={currentPage === 1 && index < 2}
-                    />
+                    <Fragment key={article.id}>
+                      <ArticleCard
+                        article={article}
+                        priority={currentPage === 1 && index < 2}
+                      />
+                      {pagedArticles.length >= ARTICLES_PER_PAGE && index === 3 ? (
+                        <InlineListAdmaxSlot />
+                      ) : null}
+                    </Fragment>
                   ))}
                 </div>
 

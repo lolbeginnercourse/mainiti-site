@@ -7,6 +7,8 @@ const mobileAdmaxScriptSrc =
   "https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7";
 const desktopAdmaxScriptSrc =
   "https://adm.shinobi.jp/s/461b51a653437bbdd4d7abccf2acc683";
+const inlineListAdmaxScriptSrc =
+  "https://adm.shinobi.jp/s/d2ea3e0b78acb0bd4578fa407fb6244f";
 
 type SiteHeaderProps = {
   activeCategory?: "top" | MainCategory;
@@ -66,6 +68,16 @@ export function DesktopAdmaxSlot() {
     <LazyAdmaxSlot
       className="admax-slot admax-slot-desktop"
       scriptSrc={desktopAdmaxScriptSrc}
+      title="広告"
+    />
+  );
+}
+
+export function InlineListAdmaxSlot() {
+  return (
+    <LazyAdmaxSlot
+      className="admax-slot admax-slot-inline"
+      scriptSrc={inlineListAdmaxScriptSrc}
       title="広告"
     />
   );

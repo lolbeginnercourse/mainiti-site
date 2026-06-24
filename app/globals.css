@@ -227,6 +227,10 @@ button {
   display: none;
 }
 
+.admax-slot-inline {
+  display: none;
+}
+
 @media (min-width: 769px) {
   .admax-slot-mobile {
     display: none;
@@ -240,6 +244,23 @@ button {
     width: 160px;
     height: 600px;
     min-height: 600px;
+    margin: 0 auto;
+  }
+
+  .admax-slot-inline {
+    grid-column: 1 / -1;
+    display: block;
+    min-height: 110px;
+    margin: 0;
+    padding: 10px 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .admax-slot-inline .admax-frame {
+    width: 728px;
+    height: 90px;
+    min-height: 90px;
     margin: 0 auto;
   }
 }
