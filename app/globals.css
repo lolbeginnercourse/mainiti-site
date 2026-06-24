@@ -211,6 +211,12 @@ button {
   overflow-y: hidden;
 }
 
+.admax-slot:empty {
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .admax-slot iframe,
 .admax-slot img {
   max-width: 100%;
@@ -438,6 +444,11 @@ button {
   border-radius: 22px;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cards .card:nth-child(n + 5) {
+  content-visibility: auto;
+  contain-intrinsic-size: 430px;
 }
 
 .card:hover,

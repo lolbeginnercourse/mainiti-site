@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 type LazyAdmaxSlotProps = {
   className: string;
+  mediaQuery?: string;
   scriptSrc: string;
   title: string;
 };
@@ -30,14 +31,19 @@ function scheduleAdLoad(callback: () => void) {
 
 export function LazyAdmaxSlot({
   className,
+  mediaQuery,
   scriptSrc,
   title
 }: LazyAdmaxSlotProps) {
   const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
+    if (mediaQuery && !window.matchMedia(mediaQuery).matches) {
+      return;
+    }
+
     scheduleAdLoad(() => setShouldLoad(true));
-  }, []);
+  }, [mediaQuery]);
 
   const srcDoc = `<!doctype html>
 <html>

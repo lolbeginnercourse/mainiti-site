@@ -56,6 +56,7 @@ export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps)
 
       <LazyAdmaxSlot
         className="admax-slot admax-slot-mobile"
+        mediaQuery="(max-width: 768px)"
         scriptSrc={mobileAdmaxScriptSrc}
         title="広告"
       />
@@ -67,6 +68,7 @@ export function DesktopAdmaxSlot() {
   return (
     <LazyAdmaxSlot
       className="admax-slot admax-slot-desktop"
+      mediaQuery="(min-width: 769px)"
       scriptSrc={desktopAdmaxScriptSrc}
       title="広告"
     />
@@ -77,6 +79,7 @@ export function InlineListAdmaxSlot() {
   return (
     <LazyAdmaxSlot
       className="admax-slot admax-slot-inline"
+      mediaQuery="(min-width: 769px)"
       scriptSrc={inlineListAdmaxScriptSrc}
       title="広告"
     />
