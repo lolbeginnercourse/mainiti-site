@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { SyntheticEvent } from "react";
 
 type LazyAdmaxSlotProps = {
   className: string;
+  collapseUntilLoaded?: boolean;
   mediaQuery?: string;
   scriptSrc: string;
   title: string;
@@ -31,11 +33,13 @@ function scheduleAdLoad(callback: () => void) {
 
 export function LazyAdmaxSlot({
   className,
+  collapseUntilLoaded = false,
   mediaQuery,
   scriptSrc,
   title
 }: LazyAdmaxSlotProps) {
   const [shouldLoad, setShouldLoad] = useState(false);
+  const [hasVisibleAd, setHasVisibleAd] = useState(!collapseUntilLoaded);
 
   useEffect(() => {
     if (mediaQuery && !window.matchMedia(mediaQuery).matches) {
@@ -61,14 +65,54 @@ export function LazyAdmaxSlot({
   </body>
 </html>`;
 
+  function checkAdContent(event: SyntheticEvent<HTMLIFrameElement>) {
+    if (!collapseUntilLoaded) {
+      return;
+    }
+
+    const frame = event.currentTarget;
+    let attempts = 0;
+
+    const check = () => {
+      attempts += 1;
+
+      try {
+        const doc = frame.contentDocument;
+        const hasRenderedAd = !!doc?.body?.querySelector(
+          "iframe,img,object,embed"
+        );
+
+        if (hasRenderedAd) {
+          setHasVisibleAd(true);
+          return;
+        }
+      } catch {
+        setHasVisibleAd(true);
+        return;
+      }
+
+      if (attempts < 12) {
+        window.setTimeout(check, 500);
+      }
+    };
+
+    check();
+  }
+
+  const slotClassName =
+    hasVisibleAd || !collapseUntilLoaded
+      ? `${className} admax-slot-loaded`
+      : `${className} admax-slot-collapsed`;
+
   return (
-    <div className={className}>
+    <div className={slotClassName}>
       {shouldLoad ? (
         <iframe
           className="admax-frame"
           title={title}
           srcDoc={srcDoc}
           loading="lazy"
+          onLoad={checkAdContent}
         />
       ) : null}
     </div>

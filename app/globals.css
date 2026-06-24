@@ -263,11 +263,25 @@ button {
     overflow: visible;
   }
 
+  .admax-slot-inline.admax-slot-collapsed {
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
   .admax-slot-inline .admax-frame {
     width: 728px;
     height: 90px;
     min-height: 90px;
     margin: 0 auto;
+  }
+
+  .admax-slot-inline.admax-slot-collapsed .admax-frame {
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    opacity: 0;
+    pointer-events: none;
   }
 }
 

@@ -79,6 +79,7 @@ export function InlineListAdmaxSlot() {
   return (
     <LazyAdmaxSlot
       className="admax-slot admax-slot-inline"
+      collapseUntilLoaded
       mediaQuery="(min-width: 769px)"
       scriptSrc={inlineListAdmaxScriptSrc}
       title="広告"
