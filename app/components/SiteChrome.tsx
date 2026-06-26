@@ -2,6 +2,7 @@ import Link from "next/link";
 import { categories, siteInfoLinks } from "@/src/libs/site-config";
 import type { MainCategory } from "@/src/libs/microcms";
 import { LazyAdmaxSlot } from "@/app/components/LazyAdmaxSlot";
+import { MobileAdmaxOverlay } from "@/app/components/MobileAdmaxOverlay";
 
 const mobileAdmaxScriptSrc =
   "https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7";
@@ -51,11 +52,9 @@ export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps)
         </div>
       </nav>
 
-      <LazyAdmaxSlot
-        className="admax-slot admax-slot-mobile"
+      <MobileAdmaxOverlay
         mediaQuery="(max-width: 768px)"
         scriptSrc={mobileAdmaxScriptSrc}
-        title="広告"
       />
     </>
   );
