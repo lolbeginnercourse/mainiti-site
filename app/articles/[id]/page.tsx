@@ -114,6 +114,7 @@ const hiddenTags = new Set([
   "お金",
   "リラックス"
 ]);
+const DEFAULT_AMAZON_CARD_TITLE = "Amazonで商品を見る";
 const japaneseDateFormatter = new Intl.DateTimeFormat("ja-JP", {
   year: "numeric",
   month: "2-digit",
@@ -570,9 +571,16 @@ function isLikelyAsin(value?: string) {
   return !!value && /^[A-Z0-9]{10}$/i.test(value);
 }
 
-function getAmazonFallbackImageUrl(asin?: string) {
-  if (!isLikelyAsin(asin)) return "";
-  return `https://images-na.ssl-images-amazon.com/images/P/${asin}.09.LZZZZZZZ.jpg`;
+function getAmazonCardTitle(productTitle?: string, inputTitle?: string) {
+  if (inputTitle) {
+    return inputTitle;
+  }
+
+  if (productTitle && productTitle !== DEFAULT_AMAZON_CARD_TITLE) {
+    return productTitle;
+  }
+
+  return DEFAULT_AMAZON_CARD_TITLE;
 }
 
 function getAmazonFallbackProductUrl(asin?: string, amazonUrlAttr?: string) {
@@ -668,9 +676,9 @@ async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock
       type: "amazon",
       key: input.key,
       asin: productAsin,
-      title: product?.title || input.titleAttr || "Amazonで商品を見る",
+      title: getAmazonCardTitle(product?.title, input.titleAttr),
       description: "価格や在庫状況は各販売ページで確認してください",
-      imageUrl: product?.imageUrl || input.imageAttr || getAmazonFallbackImageUrl(productAsin),
+      imageUrl: input.imageAttr || product?.imageUrl || "",
       amazonUrl,
       rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
       hasRakutenSetting: input.hasRakutenSetting
@@ -685,9 +693,9 @@ async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock
       type: "amazon",
       key: input.key,
       asin: fallbackAsin,
-      title: input.titleAttr || "Amazonで商品を見る",
+      title: getAmazonCardTitle(undefined, input.titleAttr),
       description: "価格や在庫状況は各販売ページで確認してください",
-      imageUrl: input.imageAttr || getAmazonFallbackImageUrl(fallbackAsin),
+      imageUrl: input.imageAttr || "",
       amazonUrl: fallbackAmazonUrl,
       rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
       hasRakutenSetting: input.hasRakutenSetting
@@ -706,8 +714,8 @@ async function createArticleBlocks(html: string): Promise<ArticleBlock[]> {
   return resolvedBlocks.filter((block): block is ArticleBlock => !!block);
 }
 
-function AmazonCard({ asin, title, description, imageUrl, amazonUrl, rakutenUrl }: AmazonCardProps) {
-  const displayImageUrl = imageUrl || getAmazonFallbackImageUrl(asin);
+function AmazonCard({ title, description, imageUrl, amazonUrl, rakutenUrl }: AmazonCardProps) {
+  const displayImageUrl = imageUrl || "";
   const safeRakutenUrl = isValidExternalUrl(rakutenUrl) ? rakutenUrl : "";
   const shouldShowRakutenArea = !!safeRakutenUrl;
 
