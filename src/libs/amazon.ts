@@ -70,6 +70,22 @@ function timeoutPromise(ms: number) {
   });
 }
 
+function cleanAmazonPageTitle(title: string) {
+  return title
+    .replace(/^Amazon\s*[|｜]\s*/i, "")
+    .split(/\s+[|｜]\s+/)[0]
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function decodeJsonString(value: string) {
+  try {
+    return JSON.parse(`"${value.replace(/"/g, '\\"')}"`);
+  } catch {
+    return value.replace(/\\\//g, "/");
+  }
+}
+
 function extractAsin(value: string) {
   const text = decodeURIComponent(value || "").trim();
 
@@ -123,6 +139,51 @@ function createFallbackProduct(asin: string): AmazonProduct {
   };
 }
 
+async function createAmazonPageFallbackProduct(asin: string): Promise<AmazonProduct> {
+  const detailPageURL = buildAmazonFallbackUrl(asin);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2500);
+
+  try {
+    const response = await fetch(detailPageURL, {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36"
+      },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      return createFallbackProduct(asin);
+    }
+
+    const html = await response.text();
+    const titleMatch = html.match(/<title>([\s\S]*?)<\/title>/i);
+    const title = cleanAmazonPageTitle(titleMatch?.[1] || "");
+
+    const imageMatch =
+      html.match(/data-old-hires="([^"]+)"/i) ||
+      html.match(/"hiRes":"([^"]+)"/i) ||
+      html.match(/id="landingImage"[^>]+src="([^"]+)"/i) ||
+      html.match(/"large":"([^"]+)"/i);
+
+    const imageUrl = imageMatch?.[1]
+      ? decodeJsonString(imageMatch[1])
+      : undefined;
+
+    return {
+      asin,
+      title: title || "Amazonで商品を見る",
+      imageUrl,
+      detailPageURL
+    };
+  } catch {
+    return createFallbackProduct(asin);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function getItemFromResponse(response: CreatorsApiResponse | undefined | null) {
   return (
     response?.itemsResult?.items?.[0] ||
@@ -174,7 +235,7 @@ export async function getAmazonProductByAsin(
         "Amazon商品情報の取得がタイムアウトしました。代替カードを表示します。ASIN:",
         cleanAsin
       );
-      return createFallbackProduct(cleanAsin);
+      return createAmazonPageFallbackProduct(cleanAsin);
     }
 
     const item = getItemFromResponse(response);
@@ -186,7 +247,7 @@ export async function getAmazonProductByAsin(
         "response:",
         JSON.stringify(response)
       );
-      return createFallbackProduct(cleanAsin);
+      return createAmazonPageFallbackProduct(cleanAsin);
     }
 
     const title = item.itemInfo?.title?.displayValue || "Amazonで商品を見る";
@@ -213,6 +274,6 @@ export async function getAmazonProductByAsin(
       error
     );
 
-    return createFallbackProduct(cleanAsin);
+    return createAmazonPageFallbackProduct(cleanAsin);
   }
 }
