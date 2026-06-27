@@ -910,10 +910,9 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
               <div className="toc-box">
                 <h2 className="toc-title">目次</h2>
                 <ul className="toc-list">
-                  {tocItems.map((item, index) => (
+                  {tocItems.map((item) => (
                     <li key={item.id}>
                       <a className="toc-button" href={`#${item.id}`}>
-                        <span className="toc-number">{index + 1}</span>
                         <span>{item.text}</span>
                       </a>
                     </li>
