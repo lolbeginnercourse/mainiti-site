@@ -9,14 +9,7 @@ type MobileAdmaxOverlayProps = {
 
 function scheduleOverlayLoad(callback: () => void) {
   const load = () => {
-    const requestIdleCallback = window.requestIdleCallback;
-
-    if (requestIdleCallback) {
-      requestIdleCallback(callback, { timeout: 2500 });
-      return;
-    }
-
-    window.setTimeout(callback, 1200);
+    window.setTimeout(callback, 150);
   };
 
   if (document.readyState === "complete") {
