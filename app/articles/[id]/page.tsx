@@ -946,6 +946,22 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
               })}
             </div>
 
+            <section className="article-author-box" aria-labelledby="article-author-title">
+              <h2 id="article-author-title" className="article-author-title">
+                記事作成者
+              </h2>
+              <p className="article-author-name">幸田 あかり</p>
+              <p>
+                日常の小さな不便や、暮らしの中で起きる困りごとを整理する実用メディアを運営しています。
+              </p>
+              <p>
+                スマホ用品、家事用品、収納、掃除、季節の悩みなどを中心に、「なぜ困るのか」「どこを見直せば楽になるのか」を生活者の目線で記事にしています。
+              </p>
+              <p>
+                公式情報だけでは分かりにくい、使ってから気づく違和感や、買う前に見落としやすい点を大切にしています。
+              </p>
+            </section>
+
             {relatedArticles.length > 0 ? (
               <div className="related-box">
                 <h2 className="related-title">関連記事</h2>
