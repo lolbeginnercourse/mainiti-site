@@ -432,7 +432,24 @@ function Pagination({
     <nav className="pagination" aria-label="記事一覧のページ移動">
       {currentPage > 1 ? (
         <Link
-          className="pagination-link"
+          className="pagination-link pagination-first"
+          href={buildCategoryListHref({
+            slug,
+            tag: selectedTag,
+            q: searchQuery,
+            page: 1
+          })}
+          aria-label="最初のページへ移動"
+        >
+          最初へ
+        </Link>
+      ) : (
+        <span className="pagination-link pagination-first disabled">最初へ</span>
+      )}
+
+      {currentPage > 1 ? (
+        <Link
+          className="pagination-link pagination-prev"
           href={buildCategoryListHref({
             slug,
             tag: selectedTag,
@@ -445,6 +462,10 @@ function Pagination({
       ) : (
         <span className="pagination-link disabled">前へ</span>
       )}
+
+      <div className="pagination-status" aria-live="polite">
+        {currentPage} / {totalPages}ページ
+      </div>
 
       <div className="pagination-numbers">
         {pages.map((page, index) => {
@@ -479,7 +500,7 @@ function Pagination({
 
       {currentPage < totalPages ? (
         <Link
-          className="pagination-link"
+          className="pagination-link pagination-next"
           href={buildCategoryListHref({
             slug,
             tag: selectedTag,
@@ -490,7 +511,24 @@ function Pagination({
           次へ
         </Link>
       ) : (
-        <span className="pagination-link disabled">次へ</span>
+        <span className="pagination-link pagination-next disabled">次へ</span>
+      )}
+
+      {currentPage < totalPages ? (
+        <Link
+          className="pagination-link pagination-last"
+          href={buildCategoryListHref({
+            slug,
+            tag: selectedTag,
+            q: searchQuery,
+            page: totalPages
+          })}
+          aria-label="最後のページへ移動"
+        >
+          最後へ
+        </Link>
+      ) : (
+        <span className="pagination-link pagination-last disabled">最後へ</span>
       )}
     </nav>
   );

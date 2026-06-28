@@ -393,6 +393,22 @@ function Pagination({
     <nav className="pagination" aria-label="記事一覧のページ移動">
       {currentPage > 1 ? (
         <Link
+          className="pagination-link pagination-first"
+          href={buildListHref({
+            tag: selectedTag,
+            q: searchQuery,
+            page: 1
+          })}
+          aria-label="最初のページへ移動"
+        >
+          最初へ
+        </Link>
+      ) : (
+        <span className="pagination-link pagination-first disabled">最初へ</span>
+      )}
+
+      {currentPage > 1 ? (
+        <Link
           className="pagination-link pagination-prev"
           href={buildListHref({
             tag: selectedTag,
@@ -456,6 +472,22 @@ function Pagination({
         </Link>
       ) : (
         <span className="pagination-link pagination-next disabled">次のページ →</span>
+      )}
+
+      {currentPage < totalPages ? (
+        <Link
+          className="pagination-link pagination-last"
+          href={buildListHref({
+            tag: selectedTag,
+            q: searchQuery,
+            page: totalPages
+          })}
+          aria-label="最後のページへ移動"
+        >
+          最後へ
+        </Link>
+      ) : (
+        <span className="pagination-link pagination-last disabled">最後へ</span>
       )}
     </nav>
   );

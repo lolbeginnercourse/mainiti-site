@@ -831,7 +831,7 @@ button {
 
 .pagination {
   display: grid;
-  grid-template-columns: minmax(118px, auto) 1fr minmax(138px, auto);
+  grid-template-columns: repeat(2, minmax(88px, auto)) minmax(0, 1fr) repeat(2, minmax(88px, auto));
   align-items: center;
   gap: 12px;
   margin: 32px 0 0;
@@ -882,16 +882,21 @@ button {
 }
 
 .pagination-link {
-  min-width: 118px;
+  min-width: 88px;
 }
 
+.pagination-first,
 .pagination-prev {
   justify-self: start;
 }
 
+.pagination-last,
 .pagination-next {
   justify-self: end;
-  min-width: 138px;
+}
+
+.pagination-next {
+  min-width: 118px;
   background: linear-gradient(135deg,var(--main),var(--main-dark));
   color: #ffffff;
   box-shadow: 0 8px 18px rgba(33,37,41,0.16);
@@ -1599,8 +1604,10 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .pagination-first,
   .pagination-prev,
   .pagination-next,
+  .pagination-last,
   .pagination-status,
   .pagination-numbers {
     justify-self: center;
@@ -1614,12 +1621,20 @@ button {
     order: 2;
   }
 
-  .pagination-prev {
+  .pagination-first {
     order: 3;
   }
 
-  .pagination-next {
+  .pagination-prev {
     order: 4;
+  }
+
+  .pagination-next {
+    order: 5;
+  }
+
+  .pagination-last {
+    order: 6;
   }
 
   .related-list {
