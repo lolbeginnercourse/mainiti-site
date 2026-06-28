@@ -13,7 +13,7 @@ import {
   type MainCategory
 } from "@/src/libs/microcms";
 import { getAmazonProductByAsin } from "@/src/libs/amazon";
-import { SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
+import { Breadcrumbs, SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
 import {
   DEFAULT_CATEGORY,
   SITE_URL,
@@ -876,6 +876,19 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
       <SiteHeader />
 
       <main className="article-page">
+        <Breadcrumbs
+          items={[
+            {
+              name: getCategoryDisplayName(articleCategory),
+              href: getCategoryHref(articleCategory)
+            },
+            {
+              name: article.title,
+              href: getArticlePath(article)
+            }
+          ]}
+        />
+
         <Link className="back-button" href="/">
           ← 一覧へ戻る
         </Link>

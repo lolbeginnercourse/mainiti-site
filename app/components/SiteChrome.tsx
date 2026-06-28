@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { categories, siteInfoLinks } from "@/src/libs/site-config";
+import { SITE_URL, categories, siteInfoLinks } from "@/src/libs/site-config";
 import type { MainCategory } from "@/src/libs/microcms";
 import { LazyAdmaxSlot } from "@/app/components/LazyAdmaxSlot";
 import { MobileAdmaxOverlay } from "@/app/components/MobileAdmaxOverlay";
@@ -15,6 +15,51 @@ type SiteHeaderProps = {
   activeCategory?: "top" | MainCategory;
   titleAs?: "h1" | "div";
 };
+
+type BreadcrumbItem = {
+  name: string;
+  href: string;
+};
+
+export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
+  const breadcrumbItems = [{ name: "トップ", href: "/" }, ...items];
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: new URL(item.href, SITE_URL).toString()
+    }))
+  };
+
+  return (
+    <>
+      <nav className="breadcrumbs" aria-label="パンくずリスト">
+        <ol className="breadcrumbs-list">
+          {breadcrumbItems.map((item, index) => {
+            const isCurrent = index === breadcrumbItems.length - 1;
+
+            return (
+              <li key={`${item.href}-${index}`} className="breadcrumbs-item">
+                {isCurrent ? (
+                  <span aria-current="page">{item.name}</span>
+                ) : (
+                  <Link href={item.href}>{item.name}</Link>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+    </>
+  );
+}
 
 export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps) {
   return (

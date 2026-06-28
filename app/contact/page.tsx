@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/app/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: "お問い合わせ",
@@ -14,6 +15,8 @@ export default function ContactPage() {
   return (
     <div className="page">
       <main className="article-page static-page">
+        <Breadcrumbs items={[{ name: "お問い合わせ", href: "/contact" }]} />
+
         <Link className="back-button" href="/">
           ← トップへ戻る
         </Link>

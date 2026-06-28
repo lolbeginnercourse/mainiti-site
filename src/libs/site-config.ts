@@ -97,3 +97,26 @@ export const siteInfoLinks = [
   { name: "免責事項", href: "/disclaimer" },
   { name: "お問い合わせ", href: "/contact" }
 ];
+
+export const purposeLinks = [
+  {
+    name: "家電選びで後悔したくない",
+    description: "置き場所、サイズ、使い方を先に確認する",
+    href: getCategoryHref("お金")
+  },
+  {
+    name: "家事を少し楽にしたい",
+    description: "掃除、洗濯、片づけの負担を減らす",
+    href: getCategoryHref("暮らし")
+  },
+  {
+    name: "便利グッズを見直したい",
+    description: "買う前に使う場面と保管場所を考える",
+    href: getCategoryHref("リラックス")
+  },
+  {
+    name: "暮らしの小さな不便を整理したい",
+    description: "日常で困りやすい原因と対策を見る",
+    href: getCategoryHref("ライフスタイル")
+  }
+];

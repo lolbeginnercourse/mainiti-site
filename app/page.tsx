@@ -11,17 +11,18 @@ import {
   type MainCategory
 } from "@/src/libs/microcms";
 import {
+  Breadcrumbs,
   DesktopAdmaxSlot,
   InlineListAdmaxSlot,
   SiteFooter,
   SiteHeader
 } from "@/app/components/SiteChrome";
 import {
-  categories,
   categoryAliasMap,
   categoryBackground,
   categoryNames,
   getCategoryDisplayName,
+  purposeLinks,
   tagColor
 } from "@/src/libs/site-config";
 
@@ -565,14 +566,13 @@ function Sidebar() {
 
         <div className="side-card">
           <h3>目的別に探す</h3>
-          <div className="tag-cloud">
-            {categories
-              .filter((category) => category.key !== "top")
-              .map((category) => (
-                <Link key={category.key} className="tag-cloud-button" href={category.href}>
-                  {category.name}
-                </Link>
-              ))}
+          <div className="purpose-link-list">
+            {purposeLinks.map((link) => (
+              <Link key={link.name} className="purpose-link" href={link.href}>
+                <span>{link.name}</span>
+                <small>{link.description}</small>
+              </Link>
+            ))}
           </div>
         </div>
 
@@ -636,6 +636,8 @@ export default async function Home({ searchParams }: HomeProps) {
       <SiteHeader activeCategory="top" titleAs="h1" />
 
       <main className="container">
+        <Breadcrumbs items={[]} />
+
         <div className="layout">
           <section>
             <h2 className="section-title">{title}</h2>

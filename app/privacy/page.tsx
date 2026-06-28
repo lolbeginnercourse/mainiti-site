@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/app/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: "プライバシーポリシー",
@@ -14,6 +15,8 @@ export default function PrivacyPage() {
   return (
     <div className="page">
       <main className="article-page static-page">
+        <Breadcrumbs items={[{ name: "プライバシーポリシー", href: "/privacy" }]} />
+
         <Link className="back-button" href="/">
           ← トップへ戻る
         </Link>
