@@ -86,6 +86,7 @@ export const client = createClient({
 });
 
 const ENDPOINT = "mainitiga";
+const noStoreRequestInit = { cache: "no-store" } as const;
 
 export async function getArticles() {
   const limit = 100;
@@ -95,6 +96,7 @@ export async function getArticles() {
   while (true) {
     const data = await client.getList<Article>({
       endpoint: ENDPOINT,
+      customRequestInit: noStoreRequestInit,
       queries: {
         limit,
         offset,
