@@ -34,6 +34,8 @@ type SearchParamsValue = {
   q?: string;
   page?: string;
   category?: string;
+  sort?: string;
+  [key: string]: string | undefined;
 };
 
 type HomeProps = {
@@ -44,11 +46,7 @@ export async function generateMetadata({
   searchParams
 }: HomeProps): Promise<Metadata> {
   const params = await Promise.resolve(searchParams || {});
-  const hasFilterQuery =
-    !!params.tag?.trim() ||
-    !!params.q?.trim() ||
-    !!params.category?.trim() ||
-    parsePageNumber(params.page) > 1;
+  const hasFilterQuery = Object.values(params).some((value) => !!value?.trim());
 
   return {
     alternates: {

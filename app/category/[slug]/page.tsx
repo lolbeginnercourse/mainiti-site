@@ -36,6 +36,8 @@ type SearchParamsValue = {
   tag?: string;
   q?: string;
   page?: string;
+  sort?: string;
+  [key: string]: string | undefined;
 };
 
 type CategoryPageProps = {
@@ -98,10 +100,9 @@ export async function generateMetadata({
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams || {});
   const selectedCategory = getCategoryFromSlug(resolvedParams.slug);
-  const hasFilterQuery =
-    !!resolvedSearchParams.tag?.trim() ||
-    !!resolvedSearchParams.q?.trim() ||
-    parsePageNumber(resolvedSearchParams.page) > 1;
+  const hasFilterQuery = Object.values(resolvedSearchParams).some(
+    (value) => !!value?.trim()
+  );
 
   if (!selectedCategory || selectedCategory === "広告") {
     return {
@@ -119,7 +120,7 @@ export async function generateMetadata({
     title: `${selectedCategoryLabel}の記事`,
     description: `${selectedCategoryLabel}カテゴリの記事一覧です。暮らしを少し楽にする実用情報をまとめています。`,
     alternates: {
-      canonical: `/category/${resolvedParams.slug}`
+      canonical: `https://mainitiwo.com/category/${resolvedParams.slug}`
     },
     robots: hasFilterQuery
       ? { index: false, follow: true }
