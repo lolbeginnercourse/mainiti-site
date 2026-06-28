@@ -1,5 +1,4 @@
 import { createClient } from "microcms-js-sdk";
-import { unstable_cache } from "next/cache";
 
 export type MainCategory =
   | "暮らし"
@@ -119,9 +118,7 @@ export async function getArticles() {
   return articles;
 }
 
-export const getCachedArticles = unstable_cache(getArticles, ["microcms-articles"], {
-  revalidate: 60
-});
+export const getCachedArticles = getArticles;
 
 export async function getPopularArticles(limit = 5) {
   const data = await client.getList<Article>({
