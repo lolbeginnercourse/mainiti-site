@@ -103,6 +103,12 @@ type ArticleBlock =
     };
 
 type ArticleBlockInput = HtmlBlockInput | AmazonBlockInput;
+
+type FaqItem = {
+  question: string;
+  answer: string;
+};
+
 const hiddenTags = new Set([
   "TOP",
   "top",
@@ -142,6 +148,10 @@ function escapeHtmlAttribute(value: string) {
     .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+function escapeHtmlText(value: string) {
+  return escapeHtmlAttribute(value);
 }
 
 function decodeAmazonShortcodeText(value: string) {
@@ -609,6 +619,75 @@ function removeSiteTitleSuffix(title: string) {
   return title.replace(/(?:｜毎日を楽に生きる)+$/g, "").trim();
 }
 
+function normalizeFaqShortcodeText(value: string) {
+  return decodeAmazonShortcodeText(value)
+    .replace(/&#91;|&#x5b;|&lbrack;/gi, "[")
+    .replace(/&#93;|&#x5d;|&rbrack;/gi, "]");
+}
+
+function normalizeFaqText(value: string) {
+  return stripHtml(decodeEscapedA8TagText(value)).replace(/\s+/g, " ").trim();
+}
+
+function buildFaqItemHtml(item: FaqItem) {
+  return `
+<section class="article-faq-item">
+  <h2 class="article-faq-question">${escapeHtmlText(item.question)}</h2>
+  <p class="article-faq-answer">${escapeHtmlText(item.answer)}</p>
+</section>
+`;
+}
+
+function replaceFaqShortcodes(html: string) {
+  const faqItems: FaqItem[] = [];
+  const normalizedHtml = normalizeFaqShortcodeText(html);
+
+  const htmlWithFaq = normalizedHtml.replace(
+    /(?:<p[^>]*>\s*)?\[faq\b([^\]]*)\]([\s\S]*?)\[\/faq\]\s*(?:<\/p>)?/gi,
+    (match, attrs, answerContent) => {
+      const question = normalizeFaqText(getShortcodeAttr(`[faq ${attrs}]`, "question"));
+      const answer = normalizeFaqText(answerContent);
+
+      if (!question || !answer) {
+        return match;
+      }
+
+      const item = { question, answer };
+      faqItems.push(item);
+
+      return buildFaqItemHtml(item);
+    }
+  );
+
+  return {
+    html: htmlWithFaq,
+    faqItems
+  };
+}
+
+function createFaqJsonLd(faqItems: FaqItem[]) {
+  if (faqItems.length === 0) {
+    return null;
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  };
+}
+
+function stringifyJsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 function parseArticleBlockInputs(html: string): ArticleBlockInput[] {
   const blockInputs: ArticleBlockInput[] = [];
   const decodedHtml = decodeAmazonShortcodeText(html);
@@ -866,8 +945,10 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
   const articleTags = getArticleTags(article);
   const bodyWithHeadingIds = addHeadingIdsToSafeHtml(safeBody);
   const bodyWithA8 = replaceA8Shortcodes(bodyWithHeadingIds);
+  const { html: bodyWithFaq, faqItems } = replaceFaqShortcodes(bodyWithA8);
+  const faqJsonLd = createFaqJsonLd(faqItems);
   const [articleBlocks, relatedArticles] = await Promise.all([
-    createArticleBlocks(bodyWithA8),
+    createArticleBlocks(bodyWithFaq),
     getRelatedArticlesSafely(article, articleCategory)
   ]);
 
@@ -888,6 +969,13 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
             }
           ]}
         />
+
+        {faqJsonLd ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: stringifyJsonLd(faqJsonLd) }}
+          />
+        ) : null}
 
         <Link className="back-button" href="/">
           ← 一覧へ戻る
