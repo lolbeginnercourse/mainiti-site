@@ -217,7 +217,7 @@ function getArticleImageUrl(article: ArticleWithCmsAliases, width = 800) {
 }
 
 function getArticleImageAlt(article: ArticleWithCmsAliases) {
-  return article.eyecatchAlt || article.title || "記事の見出し画像";
+  return article.eyecatchAlt || "";
 }
 
 function getArticleTags(article: ArticleWithCmsAliases) {
@@ -548,7 +548,7 @@ function ArticleCard({
 
   return (
     <article className="card">
-      <Link href={articlePath} className="card-link" aria-label={`${article.title}を読む`}>
+      <Link href={articlePath} className="card-link">
         <div style={{ position: "relative" }}>
           <VisualBox article={article} priority={priority} />
           <span className="tag" style={{ background: tagColor[category] || "#B85C1E" }}>
