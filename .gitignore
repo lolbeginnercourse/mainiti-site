@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 .next
 dist
+!vendor/creatorsapi-nodejs-sdk/dist/
+!vendor/creatorsapi-nodejs-sdk/dist/**
 dist-ssr
 *.local
 
