@@ -6,8 +6,23 @@ type AmazonProduct = {
 };
 
 type CreatorsApiItem = {
+  ASIN?: string;
   asin?: string;
+  DetailPageURL?: string;
   detailPageURL?: string;
+  Images?: {
+    Primary?: {
+      Small?: {
+        URL?: string;
+      };
+      Medium?: {
+        URL?: string;
+      };
+      Large?: {
+        URL?: string;
+      };
+    };
+  };
   images?: {
     primary?: {
       small?: {
@@ -19,6 +34,11 @@ type CreatorsApiItem = {
       large?: {
         url?: string;
       };
+    };
+  };
+  ItemInfo?: {
+    Title?: {
+      DisplayValue?: string;
     };
   };
   itemInfo?: {
@@ -131,10 +151,15 @@ function buildAmazonFallbackUrl(asin: string) {
   return `${baseUrl}?tag=${encodeURIComponent(partnerTag)}`;
 }
 
+function buildAmazonFallbackImageUrl(asin: string) {
+  return `https://images-na.ssl-images-amazon.com/images/P/${asin}.09.LZZZZZZZ.jpg`;
+}
+
 function createFallbackProduct(asin: string): AmazonProduct {
   return {
     asin,
     title: "Amazonで商品を見る",
+    imageUrl: buildAmazonFallbackImageUrl(asin),
     detailPageURL: buildAmazonFallbackUrl(asin)
   };
 }
@@ -250,18 +275,27 @@ export async function getAmazonProductByAsin(
       return createAmazonPageFallbackProduct(cleanAsin);
     }
 
-    const title = item.itemInfo?.title?.displayValue || "Amazonで商品を見る";
+    const title =
+      item.itemInfo?.title?.displayValue ||
+      item.ItemInfo?.Title?.DisplayValue ||
+      "Amazonで商品を見る";
 
     const detailPageURL =
-      item.detailPageURL || buildAmazonFallbackUrl(cleanAsin);
+      item.detailPageURL ||
+      item.DetailPageURL ||
+      buildAmazonFallbackUrl(cleanAsin);
 
     const imageUrl =
       item.images?.primary?.medium?.url ||
       item.images?.primary?.large?.url ||
-      item.images?.primary?.small?.url;
+      item.images?.primary?.small?.url ||
+      item.Images?.Primary?.Medium?.URL ||
+      item.Images?.Primary?.Large?.URL ||
+      item.Images?.Primary?.Small?.URL ||
+      buildAmazonFallbackImageUrl(cleanAsin);
 
     return {
-      asin: item.asin || cleanAsin,
+      asin: item.asin || item.ASIN || cleanAsin,
       title,
       imageUrl,
       detailPageURL
