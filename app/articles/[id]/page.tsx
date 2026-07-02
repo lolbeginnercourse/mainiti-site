@@ -8,7 +8,6 @@ import {
   getArticlePath,
   getCachedArticles as getCachedArticleList,
   getOptimizedImageUrl,
-  getPublishedDate,
   type Article,
   type MainCategory
 } from "@/src/libs/microcms";
@@ -121,12 +120,6 @@ const hiddenTags = new Set([
   "リラックス"
 ]);
 const DEFAULT_AMAZON_CARD_TITLE = "Amazonで商品を見る";
-const japaneseDateFormatter = new Intl.DateTimeFormat("ja-JP", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit"
-});
-
 const shortcodeAttributeNames = {
   amazonUrl: ["url", "amazonUrl", "amazon_url"],
   rakutenUrl: ["rakutenUrl", "rakuten", "rakuten_url"],
@@ -519,14 +512,6 @@ function getArticleTags(article: ArticleWithCmsAliases) {
   return normalizedTags
     .map((tag) => String(tag).replace(/^#/, "").trim())
     .filter((tag) => tag && !hiddenTags.has(tag));
-}
-
-function formatDate(date?: string) {
-  if (!date) return "";
-  const parsedDate = new Date(date);
-  if (Number.isNaN(parsedDate.getTime())) return "";
-
-  return japaneseDateFormatter.format(parsedDate).replaceAll("/", ".");
 }
 
 function sanitizeHtml(html: string) {
@@ -990,7 +975,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
           </div>
 
           <div className="article-content">
-            <div className="date">{formatDate(getPublishedDate(article))}</div>
             <h1 className="article-title">{article.title}</h1>
 
             {articleTags.length > 0 ? (
