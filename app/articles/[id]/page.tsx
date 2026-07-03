@@ -578,6 +578,10 @@ function getAmazonCardTitle(productTitle?: string, inputTitle?: string) {
   return DEFAULT_AMAZON_CARD_TITLE;
 }
 
+function getValidImageUrl(...urls: Array<string | undefined>) {
+  return urls.find((url) => isValidExternalUrl(url)) || "";
+}
+
 function getAmazonFallbackProductUrl(asin?: string, amazonUrlAttr?: string) {
   if (amazonUrlAttr && isValidExternalUrl(amazonUrlAttr)) return amazonUrlAttr;
   if (!isLikelyAsin(asin)) return "";
@@ -742,7 +746,7 @@ async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock
       asin: productAsin,
       title: getAmazonCardTitle(product?.title, input.titleAttr),
       description: "価格や在庫状況は各販売ページで確認してください",
-      imageUrl: input.imageAttr || product?.imageUrl || "",
+      imageUrl: getValidImageUrl(input.imageAttr, product?.imageUrl),
       amazonUrl,
       rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
       hasRakutenSetting: input.hasRakutenSetting
@@ -759,7 +763,7 @@ async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock
       asin: fallbackAsin,
       title: getAmazonCardTitle(undefined, input.titleAttr),
       description: "価格や在庫状況は各販売ページで確認してください",
-      imageUrl: input.imageAttr || "",
+      imageUrl: getValidImageUrl(input.imageAttr),
       amazonUrl: fallbackAmazonUrl,
       rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
       hasRakutenSetting: input.hasRakutenSetting
@@ -779,7 +783,7 @@ async function createArticleBlocks(html: string): Promise<ArticleBlock[]> {
 }
 
 function AmazonCard({ title, description, imageUrl, amazonUrl, rakutenUrl }: AmazonCardProps) {
-  const displayImageUrl = imageUrl || "";
+  const displayImageUrl = getValidImageUrl(imageUrl);
   const safeRakutenUrl = isValidExternalUrl(rakutenUrl) ? rakutenUrl : "";
   const shouldShowRakutenArea = !!safeRakutenUrl;
 
