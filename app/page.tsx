@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 import {
   getArticlePath,
   getCachedArticles,
@@ -22,6 +23,7 @@ import {
   categoryBackground,
   categoryNames,
   getCategoryDisplayName,
+  getCategoryHref,
   purposeLinks,
   tagColor
 } from "@/src/libs/site-config";
@@ -202,6 +204,22 @@ function stripHtml(value: string) {
 
 function getArticleSummary(article: ArticleWithCmsAliases) {
   return article.summary || article.description || "";
+}
+
+function getLegacyCategoryRedirectPath(category?: string) {
+  const normalizedCategory = category?.trim();
+
+  if (!normalizedCategory) {
+    return "";
+  }
+
+  const articleCategory =
+    categoryAliasMap[normalizedCategory] ||
+    (categoryNames.includes(normalizedCategory as MainCategory)
+      ? (normalizedCategory as MainCategory)
+      : undefined);
+
+  return articleCategory ? getCategoryHref(articleCategory) : "";
 }
 
 function getCardSummary(article: ArticleWithCmsAliases) {
@@ -626,6 +644,12 @@ function EmptyState() {
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = await Promise.resolve(searchParams || {});
+  const legacyCategoryRedirectPath = getLegacyCategoryRedirectPath(params.category);
+
+  if (legacyCategoryRedirectPath) {
+    permanentRedirect(legacyCategoryRedirectPath);
+  }
+
   const selectedTag = params.tag?.trim() || undefined;
   const searchQuery = params.q?.trim() || "";
   const requestedPage = parsePageNumber(params.page);
