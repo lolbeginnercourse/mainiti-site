@@ -115,6 +115,17 @@ export async function generateMetadata({
   }
 
   const selectedCategoryLabel = getCategoryDisplayName(selectedCategory);
+  let hasCategoryArticles = false;
+
+  try {
+    const articles = (await getCachedArticles()) as ArticleWithCmsAliases[];
+    hasCategoryArticles = hasPublishedArticleForCategory(
+      articles,
+      selectedCategory
+    );
+  } catch {
+    hasCategoryArticles = false;
+  }
 
   return {
     title: `${selectedCategoryLabel}の記事`,
@@ -122,7 +133,7 @@ export async function generateMetadata({
     alternates: {
       canonical: `https://mainitiwo.com/category/${resolvedParams.slug}`
     },
-    robots: hasFilterQuery
+    robots: hasFilterQuery || !hasCategoryArticles
       ? { index: false, follow: true }
       : { index: true, follow: true },
     openGraph: {
@@ -222,6 +233,17 @@ function getArticleCategories(article: ArticleWithCmsAliases): MainCategory[] {
 
 function getArticleCategory(article: ArticleWithCmsAliases): MainCategory {
   return getArticleCategories(article)[0];
+}
+
+function hasPublishedArticleForCategory(
+  articles: ArticleWithCmsAliases[],
+  category: MainCategory
+) {
+  return articles.some((article) => {
+    if (article.isAd) return false;
+
+    return getArticleCategories(article).includes(category);
+  });
 }
 
 function getArticleBodyText(article: ArticleWithCmsAliases) {

@@ -2,14 +2,27 @@ import {
   getArticlePath,
   getCachedArticles,
   getPublishedDate,
-  type Article
+  type Article,
+  type MainCategory
 } from "@/src/libs/microcms";
-import { SITE_URL, categories, siteInfoLinks } from "@/src/libs/site-config";
+import {
+  SITE_URL,
+  categories,
+  categoryAliasMap,
+  categoryNames,
+  siteInfoLinks
+} from "@/src/libs/site-config";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
 type ArticleForSitemap = Article & {
+  category?: CmsCategoryValue;
+  categories?: CmsCategoryValue;
+  tags?: string[] | string;
+  subTags?: string[] | string;
+  main_category?: CmsCategoryValue;
+  maincategory?: CmsCategoryValue;
   noIndex?: boolean;
   noindex?: boolean;
   no_index?: boolean;
@@ -20,13 +33,23 @@ type ArticleForSitemap = Article & {
   createdAt?: string;
 };
 
-const staticUrls = [
-  "/",
-  ...siteInfoLinks.map((link) => link.href),
-  ...categories
-    .filter((category) => category.key !== "top")
-    .map((category) => category.href)
-];
+type CmsCategoryObject = {
+  id?: string;
+  name?: string;
+  title?: string;
+  value?: string;
+  label?: string;
+  text?: string;
+  key?: string;
+};
+
+type CmsCategoryValue =
+  | string
+  | string[]
+  | CmsCategoryObject
+  | CmsCategoryObject[];
+
+const staticUrls = ["/", ...siteInfoLinks.map((link) => link.href)];
 
 function escapeXml(value: string) {
   return value
@@ -51,6 +74,88 @@ function isPublishedArticle(article: ArticleForSitemap) {
   if (article.noIndex || article.noindex || article.no_index) return false;
 
   return true;
+}
+
+function getCategoryTextCandidates(value: unknown): string[] {
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => getCategoryTextCandidates(item));
+  }
+
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+
+    return [
+      record.name,
+      record.title,
+      record.value,
+      record.label,
+      record.text,
+      record.key,
+      record.id
+    ].flatMap((item) => getCategoryTextCandidates(item));
+  }
+
+  return [];
+}
+
+function findArticleCategories(values: string[]): MainCategory[] {
+  const foundCategories: MainCategory[] = [];
+
+  for (const value of values) {
+    const cleanedValue = value.replace(/^#/, "").trim();
+
+    if (!cleanedValue) {
+      continue;
+    }
+
+    const aliasCategory = categoryAliasMap[cleanedValue];
+
+    if (aliasCategory && !foundCategories.includes(aliasCategory)) {
+      foundCategories.push(aliasCategory);
+      continue;
+    }
+
+    for (const category of categoryNames) {
+      if (
+        (cleanedValue === category || cleanedValue.includes(category)) &&
+        !foundCategories.includes(category)
+      ) {
+        foundCategories.push(category);
+      }
+    }
+  }
+
+  return foundCategories;
+}
+
+function getArticleCategories(article: ArticleForSitemap): MainCategory[] {
+  const articleRecord = article as Record<string, unknown>;
+  const primaryValues = [
+    articleRecord.category,
+    articleRecord.categories,
+    articleRecord.tags,
+    articleRecord.subTags
+  ].flatMap((value) => getCategoryTextCandidates(value));
+  const primaryCategories = findArticleCategories(primaryValues);
+
+  if (primaryCategories.length > 0) {
+    return primaryCategories;
+  }
+
+  const fallbackValues = [
+    articleRecord.mainCategory,
+    articleRecord.main_category,
+    articleRecord.maincategory
+  ].flatMap((value) => getCategoryTextCandidates(value));
+  const fallbackCategories = findArticleCategories(fallbackValues);
+
+  return fallbackCategories.length > 0 ? fallbackCategories : ["暮らし"];
 }
 
 function getLastModified(article: ArticleForSitemap) {
@@ -82,12 +187,23 @@ export async function GET() {
   }
 
   const seen = new Set<string>();
+  const publishedArticles = articles.filter(isPublishedArticle);
+  const categoryUrls = categories
+    .filter((category) => {
+      if (category.key === "top") return false;
+
+      return publishedArticles.some((article) =>
+        getArticleCategories(article).includes(category.key as MainCategory)
+      );
+    })
+    .map((category) => category.href);
+
   const urls = [
-    ...staticUrls.map((path) => ({
+    ...[...staticUrls, ...categoryUrls].map((path) => ({
       url: toAbsoluteUrl(path),
       lastModified: new Date().toISOString()
     })),
-    ...articles.filter(isPublishedArticle).map((article) => ({
+    ...publishedArticles.map((article) => ({
       url: toAbsoluteUrl(getArticlePath(article)),
       lastModified: getLastModified(article)
     }))
