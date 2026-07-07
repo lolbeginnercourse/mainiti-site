@@ -108,6 +108,7 @@ type FaqItem = {
   answer: string;
 };
 
+const DEFAULT_OG_IMAGE_URL = `${SITE_URL}/icon.png`;
 const hiddenTags = new Set([
   "TOP",
   "top",
@@ -604,6 +605,24 @@ function getCanonicalUrl(article: ArticleWithCmsAliases) {
   }
 }
 
+function getAbsolutePublicUrl(url?: string) {
+  if (!url) return "";
+
+  try {
+    return new URL(url, SITE_URL).toString();
+  } catch {
+    return "";
+  }
+}
+
+function getArticleOgImageUrl(article: ArticleWithCmsAliases) {
+  return (
+    getAbsolutePublicUrl(article.ogImage?.url) ||
+    getAbsolutePublicUrl(article.eyecatch?.url) ||
+    DEFAULT_OG_IMAGE_URL
+  );
+}
+
 function removeSiteTitleSuffix(title: string) {
   return title.replace(/(?:｜毎日を楽に生きる)+$/g, "").trim();
 }
@@ -884,8 +903,9 @@ export async function generateMetadata({ params, searchParams }: ArticlePageProp
   try {
     const article = await getCachedArticleBySlugOrId(resolvedParams.id, draftKey);
     const title = removeSiteTitleSuffix(article.metaTitle || article.title);
-    const description = article.metaDescription || getArticleSummary(article);
-    const image = article.ogImage?.url || article.eyecatch?.url;
+    const description =
+      article.metaDescription || getArticleSummary(article) || article.title;
+    const image = getArticleOgImageUrl(article);
     const shouldNoIndex = getShouldNoIndex(article, draftKey);
     const canonicalUrl = getCanonicalUrl(article);
 
@@ -899,10 +919,22 @@ export async function generateMetadata({ params, searchParams }: ArticlePageProp
         canonical: canonicalUrl
       },
       openGraph: {
+        type: "article",
         title,
         description,
         url: canonicalUrl,
-        images: image ? [image] : []
+        images: [
+          {
+            url: image,
+            alt: article.eyecatchAlt || title
+          }
+        ]
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [image]
       }
     };
   } catch {
