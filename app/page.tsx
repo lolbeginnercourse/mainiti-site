@@ -262,23 +262,7 @@ function getSearchTerms(value: string) {
 }
 
 function getArticleSearchText(article: ArticleWithCmsAliases) {
-  const categoriesText = getArticleCategories(article).join(" ");
-  const tagsText = getArticleTags(article).join(" ");
-  const summary = getArticleSummary(article);
-  const bodyText = stripHtml(getArticleBodyText(article));
-
-  return [
-    article.title,
-    article.metaTitle,
-    article.metaDescription,
-    summary,
-    categoriesText,
-    tagsText,
-    bodyText
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+  return normalizeSearchKeyword(stripHtml(article.title || ""));
 }
 
 function articleMatchesSearch(article: ArticleWithCmsAliases, searchQuery: string) {
