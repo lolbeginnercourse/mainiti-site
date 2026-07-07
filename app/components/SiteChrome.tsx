@@ -5,7 +5,7 @@ import { LazyAdmaxSlot } from "@/app/components/LazyAdmaxSlot";
 import { MobileAdmaxOverlay } from "@/app/components/MobileAdmaxOverlay";
 
 const mobileAdmaxScriptSrc =
-  "https://adm.shinobi.jp/s/4ac6a048e773d4f7c0f7be16b1d1d3b7";
+  "https://adm.shinobi.jp/s/de612ab7a7e96cf7e1e0cb58d884c97a";
 const desktopAdmaxScriptSrc =
   "https://adm.shinobi.jp/s/461b51a653437bbdd4d7abccf2acc683";
 const inlineListAdmaxScriptSrc =
