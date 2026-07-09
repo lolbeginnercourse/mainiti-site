@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { SITE_URL, categories, siteInfoLinks } from "@/src/libs/site-config";
 import type { MainCategory } from "@/src/libs/microcms";
+import { LazyAdmaxSlot } from "@/app/components/LazyAdmaxSlot";
+import { MobileAdmaxOverlay } from "@/app/components/MobileAdmaxOverlay";
+
+const mobileAdmaxScriptSrc =
+  "https://adm.shinobi.jp/s/de612ab7a7e96cf7e1e0cb58d884c97a";
+const desktopAdmaxScriptSrc =
+  "https://adm.shinobi.jp/s/461b51a653437bbdd4d7abccf2acc683";
+const inlineListAdmaxScriptSrc =
+  "https://adm.shinobi.jp/s/d2ea3e0b78acb0bd4578fa407fb6244f";
 
 type SiteHeaderProps = {
   activeCategory?: "top" | MainCategory;
@@ -88,7 +97,34 @@ export function SiteHeader({ activeCategory, titleAs = "div" }: SiteHeaderProps)
         </div>
       </nav>
 
+      <MobileAdmaxOverlay
+        mediaQuery="(max-width: 768px)"
+        scriptSrc={mobileAdmaxScriptSrc}
+      />
     </>
+  );
+}
+
+export function DesktopAdmaxSlot() {
+  return (
+    <LazyAdmaxSlot
+      className="admax-slot admax-slot-desktop"
+      mediaQuery="(min-width: 769px)"
+      scriptSrc={desktopAdmaxScriptSrc}
+      title="広告"
+    />
+  );
+}
+
+export function InlineListAdmaxSlot() {
+  return (
+    <LazyAdmaxSlot
+      className="admax-slot admax-slot-inline"
+      collapseUntilLoaded
+      mediaQuery="(min-width: 769px)"
+      scriptSrc={inlineListAdmaxScriptSrc}
+      title="広告"
+    />
   );
 }
 
