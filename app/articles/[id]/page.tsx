@@ -567,6 +567,28 @@ function isLikelyAsin(value?: string) {
   return !!value && /^[A-Z0-9]{10}$/i.test(value);
 }
 
+function extractAmazonAsin(value?: string) {
+  const text = normalizeUrl(value || "");
+
+  if (isLikelyAsin(text)) {
+    return text.toUpperCase();
+  }
+
+  const match =
+    text.match(/\/dp\/([A-Z0-9]{10})/i) ||
+    text.match(/\/gp\/product\/([A-Z0-9]{10})/i) ||
+    text.match(/[?&]asin=([A-Z0-9]{10})/i) ||
+    text.match(/\/([A-Z0-9]{10})(?:[/?#]|$)/i);
+
+  return match?.[1]?.toUpperCase() || "";
+}
+
+function getAmazonFallbackImageUrl(asin?: string) {
+  if (!isLikelyAsin(asin)) return "";
+
+  return `https://images-na.ssl-images-amazon.com/images/P/${asin}.09.LZZZZZZZ.jpg`;
+}
+
 function getAmazonCardTitle(productTitle?: string, inputTitle?: string) {
   if (inputTitle) {
     return inputTitle;
@@ -753,7 +775,7 @@ async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock
 
   try {
     const product = await getCachedAmazonProduct(asinOrUrl);
-    const productAsin = product?.asin || input.asin;
+    const productAsin = product?.asin || input.asin || extractAmazonAsin(input.amazonUrlAttr);
     const amazonUrl =
       product?.detailPageURL || getAmazonFallbackProductUrl(productAsin, input.amazonUrlAttr);
 
@@ -765,13 +787,17 @@ async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock
       asin: productAsin,
       title: getAmazonCardTitle(product?.title, input.titleAttr),
       description: "価格や在庫状況は各販売ページで確認してください",
-      imageUrl: getValidImageUrl(input.imageAttr, product?.imageUrl),
+      imageUrl: getValidImageUrl(
+        input.imageAttr,
+        product?.imageUrl,
+        getAmazonFallbackImageUrl(productAsin)
+      ),
       amazonUrl,
       rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
       hasRakutenSetting: input.hasRakutenSetting
     };
   } catch {
-    const fallbackAsin = isLikelyAsin(input.asin) ? input.asin : undefined;
+    const fallbackAsin = input.asin || extractAmazonAsin(input.amazonUrlAttr);
     const fallbackAmazonUrl = getAmazonFallbackProductUrl(fallbackAsin, input.amazonUrlAttr);
 
     if (!fallbackAmazonUrl) return null;
@@ -782,7 +808,7 @@ async function resolveAmazonBlock(input: AmazonBlockInput): Promise<ArticleBlock
       asin: fallbackAsin,
       title: getAmazonCardTitle(undefined, input.titleAttr),
       description: "価格や在庫状況は各販売ページで確認してください",
-      imageUrl: getValidImageUrl(input.imageAttr),
+      imageUrl: getValidImageUrl(input.imageAttr, getAmazonFallbackImageUrl(fallbackAsin)),
       amazonUrl: fallbackAmazonUrl,
       rakutenUrl: isValidExternalUrl(input.rakutenUrl) ? input.rakutenUrl : undefined,
       hasRakutenSetting: input.hasRakutenSetting
