@@ -31,7 +31,7 @@ import {
 } from "@/src/libs/site-config";
 
 export const revalidate = 60;
-export const dynamic = "force-dynamic";
+export const dynamic = "auto";
 
 type SearchParamsValue = {
   tag?: string;

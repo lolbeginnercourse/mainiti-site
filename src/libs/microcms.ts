@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { createClient } from "microcms-js-sdk";
 
 export type MainCategory =
@@ -86,7 +87,12 @@ export const client = createClient({
 });
 
 const ENDPOINT = "mainitiga";
-const noStoreRequestInit = { cache: "no-store" } as const;
+const ARTICLE_LIST_CACHE_SECONDS = 300;
+const cachedRequestInit = {
+  next: {
+    revalidate: ARTICLE_LIST_CACHE_SECONDS
+  }
+} as unknown as RequestInit;
 
 export async function getArticles() {
   const limit = 100;
@@ -96,7 +102,7 @@ export async function getArticles() {
   while (true) {
     const data = await client.getList<Article>({
       endpoint: ENDPOINT,
-      customRequestInit: noStoreRequestInit,
+      customRequestInit: cachedRequestInit,
       queries: {
         limit,
         offset,
@@ -120,7 +126,10 @@ export async function getArticles() {
   return articles;
 }
 
-export const getCachedArticles = getArticles;
+export const getCachedArticles = unstable_cache(getArticles, ["mainitiga-articles"], {
+  revalidate: ARTICLE_LIST_CACHE_SECONDS,
+  tags: ["mainitiga-articles"]
+});
 
 export async function getPopularArticles(limit = 5) {
   const data = await client.getList<Article>({
