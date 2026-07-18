@@ -7,6 +7,7 @@ import { permanentRedirect } from "next/navigation";
 import {
   getArticlePath,
   getCachedArticles,
+  getCachedLatestArticlesForList,
   getOptimizedImageUrl,
   type Article,
   type MainCategory
@@ -652,7 +653,9 @@ export default async function Home({ searchParams }: HomeProps) {
   let articles: ArticleWithCmsAliases[] = [];
 
   try {
-    articles = (await getCachedArticles()) as ArticleWithCmsAliases[];
+    articles = hasListFilter
+      ? ((await getCachedArticles()) as ArticleWithCmsAliases[])
+      : ((await getCachedLatestArticlesForList(16)) as ArticleWithCmsAliases[]);
   } catch {
     articles = [];
   }

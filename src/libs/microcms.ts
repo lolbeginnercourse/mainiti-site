@@ -130,6 +130,27 @@ export const getCachedArticles = unstable_cache(getArticles, ["mainitiga-article
   revalidate: ARTICLE_LIST_CACHE_SECONDS,
   tags: ["mainitiga-articles"]
 });
+export async function getLatestArticlesForList(limit = 16) {
+  const data = await client.getList<Article>({
+    endpoint: ENDPOINT,
+    customRequestInit: cachedRequestInit,
+    queries: {
+      limit,
+      orders: "-publishedAt",
+    },
+  });
+
+  return data.contents;
+}
+
+export const getCachedLatestArticlesForList = unstable_cache(
+  getLatestArticlesForList,
+  ["mainitiga-latest-articles"],
+  {
+    revalidate: ARTICLE_LIST_CACHE_SECONDS,
+    tags: ["mainitiga-latest-articles"]
+  }
+);
 
 export async function getPopularArticles(limit = 5) {
   const data = await client.getList<Article>({
