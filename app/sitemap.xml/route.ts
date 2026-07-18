@@ -49,7 +49,7 @@ type CmsCategoryValue =
   | CmsCategoryObject
   | CmsCategoryObject[];
 
-const staticUrls = ["/", ...siteInfoLinks.map((link) => link.href)];
+const staticUrls = ["/", "/articles", "/authors/akari", ...siteInfoLinks.map((link) => link.href)];
 
 function escapeXml(value: string) {
   return value

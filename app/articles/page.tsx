@@ -3,7 +3,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { permanentRedirect } from "next/navigation";
 import {
   getArticlePath,
   getCachedArticles,
@@ -21,10 +20,8 @@ import {
 import {
   categoryAliasMap,
   categoryBackground,
-  categories,
   categoryNames,
   getCategoryDisplayName,
-  getCategoryHref,
   purposeLinks,
   tagColor
 } from "@/src/libs/site-config";
@@ -41,19 +38,22 @@ type SearchParamsValue = {
   [key: string]: string | undefined;
 };
 
-type HomeProps = {
+type ArticlesPageProps = {
   searchParams?: SearchParamsValue | Promise<SearchParamsValue>;
 };
 
 export async function generateMetadata({
   searchParams
-}: HomeProps): Promise<Metadata> {
+}: ArticlesPageProps): Promise<Metadata> {
   const params = await Promise.resolve(searchParams || {});
   const hasFilterQuery = !!params.q?.trim() || !!params.tag?.trim() || !!params.sort?.trim() || !!params.category?.trim();
+  const pageNumber = parsePageNumber(params.page);
 
   return {
+    title: pageNumber > 1 ? `新着記事一覧 ${pageNumber}ページ目` : "新着記事一覧",
+    description: "毎日を楽に生きるの新着記事一覧です。暮らしの小さな不便や道具選びを新しい順に確認できます。",
     alternates: {
-      canonical: "https://mainitiwo.com/"
+      canonical: params.page && params.page !== "1" ? `https://mainitiwo.com/articles?page=${params.page}` : "https://mainitiwo.com/articles"
     },
     robots: hasFilterQuery
       ? { index: false, follow: true }
@@ -204,22 +204,6 @@ function getArticleSummary(article: ArticleWithCmsAliases) {
   return article.summary || article.description || "";
 }
 
-function getLegacyCategoryRedirectPath(category?: string) {
-  const normalizedCategory = category?.trim();
-
-  if (!normalizedCategory) {
-    return "";
-  }
-
-  const articleCategory =
-    categoryAliasMap[normalizedCategory] ||
-    (categoryNames.includes(normalizedCategory as MainCategory)
-      ? (normalizedCategory as MainCategory)
-      : undefined);
-
-  return articleCategory ? getCategoryHref(articleCategory) : "";
-}
-
 function getCardSummary(article: ArticleWithCmsAliases) {
   const summary = stripHtml(getArticleSummary(article));
   const firstSentence = summary.match(/^.+?[。！？!?]/)?.[0];
@@ -297,7 +281,7 @@ function clampPage(page: number, totalPages: number) {
   return Math.min(Math.max(page, 1), Math.max(totalPages, 1));
 }
 
-function buildListHref({
+function buildArticlesListHref({
   tag,
   q,
   page
@@ -322,7 +306,7 @@ function buildListHref({
 
   const query = params.toString();
 
-  return query ? `/?${query}` : "/";
+  return query ? `/articles?${query}` : "/articles";
 }
 
 function getPaginationPages(currentPage: number, totalPages: number) {
@@ -349,7 +333,7 @@ function SearchBox({
   searchQuery?: string;
 }) {
   return (
-    <form className="search-box" action="/" method="get">
+    <form className="search-box" action="/articles" method="get">
       {selectedTag ? <input type="hidden" name="tag" value={selectedTag} /> : null}
 
       <div className="search-input-wrap">
@@ -369,7 +353,7 @@ function SearchBox({
       {searchQuery ? (
         <Link
           className="search-clear"
-          href={buildListHref({
+          href={buildArticlesListHref({
             tag: selectedTag
           })}
         >
@@ -402,7 +386,7 @@ function Pagination({
       {currentPage > 1 ? (
         <Link
           className="pagination-link pagination-first"
-          href={buildListHref({
+          href={buildArticlesListHref({
             tag: selectedTag,
             q: searchQuery,
             page: 1
@@ -418,7 +402,7 @@ function Pagination({
       {currentPage > 1 ? (
         <Link
           className="pagination-link pagination-prev"
-          href={buildListHref({
+          href={buildArticlesListHref({
             tag: selectedTag,
             q: searchQuery,
             page: currentPage - 1
@@ -451,7 +435,7 @@ function Pagination({
               ) : (
                 <Link
                   className="pagination-number"
-                  href={buildListHref({
+                  href={buildArticlesListHref({
                     tag: selectedTag,
                     q: searchQuery,
                     page
@@ -469,7 +453,7 @@ function Pagination({
       {currentPage < totalPages ? (
         <Link
           className="pagination-link pagination-next"
-          href={buildListHref({
+          href={buildArticlesListHref({
             tag: selectedTag,
             q: searchQuery,
             page: currentPage + 1
@@ -485,7 +469,7 @@ function Pagination({
       {currentPage < totalPages ? (
         <Link
           className="pagination-link pagination-last"
-          href={buildListHref({
+          href={buildArticlesListHref({
             tag: selectedTag,
             q: searchQuery,
             page: totalPages
@@ -625,27 +609,16 @@ function EmptyState() {
     <div className="empty-state">
       <h3>該当する記事はまだありません</h3>
       <p>別のタグや検索ワードで記事を探してみてください。</p>
-      <Link href="/" className="read-more">
-        トップへ戻る
+      <Link href="/articles" className="read-more">
+        新着記事一覧へ戻る
       </Link>
     </div>
   );
 }
 
-export default async function Home({ searchParams }: HomeProps) {
+export default async function ArticlesIndexPage({ searchParams }: ArticlesPageProps) {
   const params = await Promise.resolve(searchParams || {});
-  const legacyCategoryRedirectPath = getLegacyCategoryRedirectPath(params.category);
-
-  if (legacyCategoryRedirectPath) {
-    permanentRedirect(legacyCategoryRedirectPath);
-  }
-
   const selectedTag = params.tag?.trim() || undefined;
-  const hasListFilter = !!selectedTag || !!params.q?.trim();
-
-  if (params.page && !hasListFilter) {
-    permanentRedirect(`/articles?page=${parsePageNumber(params.page)}`);
-  }
   const searchQuery = params.q?.trim() || "";
   const requestedPage = parsePageNumber(params.page);
 
@@ -674,43 +647,25 @@ export default async function Home({ searchParams }: HomeProps) {
   const startIndex = (currentPage - 1) * ARTICLES_PER_PAGE;
   const pagedArticles = visibleArticles.slice(startIndex, startIndex + ARTICLES_PER_PAGE);
 
-  const title = searchQuery
+    const title = searchQuery
     ? `「${searchQuery}」の検索結果`
     : selectedTag
       ? `${selectedTag}の記事`
-      : "新着記事";
+      : "新着記事一覧";
 
   return (
     <div className="page">
-      <SiteHeader activeCategory="top" titleAs="h1" />
+      <SiteHeader activeCategory="top" />
 
       <main className="container">
-        <Breadcrumbs items={[]} />
+        <Breadcrumbs items={[{ name: "新着記事一覧", href: "/articles" }]} />
 
         <div className="layout">
           <section>
-            {!hasListFilter ? (
-              <div className="home-intro">
-                <p>
-                  毎日の小さな不便を、原因と見直し方から整理する実用メディアです。
-                  家の中、ガジェット・機材、便利グッズ選びで迷いやすい点を短く確認できます。
-                </p>
-                <div className="home-category-links" aria-label="主要カテゴリ">
-                  {categories
-                    .filter((category) => category.key !== "top")
-                    .map((category) => (
-                      <Link key={category.key} href={category.href} className="home-category-link">
-                        {category.name}
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            ) : null}
-
-            <h2 className="section-title">{title}</h2>
+            <h1 className="section-title">{title}</h1>
             <div className="list-status">
               <span>{totalArticles}件の記事</span>
-              {hasListFilter ? <span>{currentPage} / {totalPages}ページ</span> : null}
+              <span>{currentPage} / {totalPages}ページ</span>
             </div>
 
             <SearchBox
@@ -734,20 +689,12 @@ export default async function Home({ searchParams }: HomeProps) {
                   ))}
                 </div>
 
-                {hasListFilter ? (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    selectedTag={selectedTag}
-                    searchQuery={searchQuery}
-                  />
-                ) : (
-                  <div className="more-link-row">
-                    <Link className="read-more" href="/articles">
-                      新着記事をもっと見る →
-                    </Link>
-                  </div>
-                )}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  selectedTag={selectedTag}
+                  searchQuery={searchQuery}
+                />
               </>
             ) : (
               <EmptyState />

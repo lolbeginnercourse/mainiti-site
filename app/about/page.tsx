@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Breadcrumbs } from "@/app/components/SiteChrome";
+import { Breadcrumbs, SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: "運営者情報",
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="page">
+      <SiteHeader />
       <main className="article-page static-page">
         <Breadcrumbs items={[{ name: "運営者情報", href: "/about" }]} />
 
@@ -112,6 +113,7 @@ export default function AboutPage() {
           </div>
         </article>
       </main>
+      <SiteFooter />
     </div>
   );
 }

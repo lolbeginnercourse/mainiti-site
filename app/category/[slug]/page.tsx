@@ -100,9 +100,8 @@ export async function generateMetadata({
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams || {});
   const selectedCategory = getCategoryFromSlug(resolvedParams.slug);
-  const hasFilterQuery = Object.values(resolvedSearchParams).some(
-    (value) => !!value?.trim()
-  );
+  const hasFilterQuery = !!resolvedSearchParams.q?.trim() || !!resolvedSearchParams.tag?.trim() || !!resolvedSearchParams.sort?.trim();
+  const pageNumber = parsePageNumber(resolvedSearchParams.page);
 
   if (!selectedCategory || selectedCategory === "広告") {
     return {
@@ -128,10 +127,12 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${selectedCategoryLabel}の記事`,
+    title: pageNumber > 1 ? `${selectedCategoryLabel}の記事 ${pageNumber}ページ目` : `${selectedCategoryLabel}の記事`,
     description: `${selectedCategoryLabel}カテゴリの記事一覧です。暮らしを少し楽にする実用情報をまとめています。`,
     alternates: {
-      canonical: `https://mainitiwo.com/category/${resolvedParams.slug}`
+      canonical: pageNumber > 1
+        ? `https://mainitiwo.com/category/${resolvedParams.slug}?page=${pageNumber}`
+        : `https://mainitiwo.com/category/${resolvedParams.slug}`
     },
     robots: hasFilterQuery || !hasCategoryArticles
       ? { index: false, follow: true }
@@ -295,7 +296,15 @@ function getSearchTerms(value: string) {
 }
 
 function getArticleSearchText(article: ArticleWithCmsAliases) {
-  return normalizeSearchKeyword(stripHtml(article.title || ""));
+  const categoryText = getArticleCategories(article)
+    .map((category) => getCategoryDisplayName(category))
+    .join(" ");
+  const tagText = getArticleTags(article).join(" ");
+  const summaryText = getArticleSummary(article);
+
+  return normalizeSearchKeyword(
+    stripHtml([article.title, categoryText, tagText, summaryText].filter(Boolean).join(" "))
+  );
 }
 
 function articleMatchesSearch(article: ArticleWithCmsAliases, searchQuery: string) {
@@ -720,7 +729,7 @@ export default async function CategoryPage({
 
   return (
     <div className="page">
-      <SiteHeader activeCategory={selectedCategory} titleAs="h1" />
+      <SiteHeader activeCategory={selectedCategory} />
 
       <main className="container">
         <Breadcrumbs
@@ -734,7 +743,7 @@ export default async function CategoryPage({
 
         <div className="layout">
           <section>
-            <h2 className="section-title">{title}</h2>
+            <h1 className="section-title">{title}</h1>
 
             <SearchBox
               slug={resolvedParams.slug}

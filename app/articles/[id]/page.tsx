@@ -399,15 +399,10 @@ async function getRelatedArticlesSafely(
 ) {
   try {
     const sourceTags = getArticleTags(article);
-
-    if (sourceTags.length === 0) {
-      return [];
-    }
-
     const sourceTagSet = new Set(sourceTags);
     const allArticles = await getCachedArticles();
-
-    return allArticles
+    const candidates = allArticles
+      .filter((item) => !item.isAd && item.id !== article.id)
       .map((item) => {
         const itemCategory = getArticleCategory(item);
         const itemTags = getArticleTags(item);
@@ -418,15 +413,29 @@ async function getRelatedArticlesSafely(
           sharedTagCount,
           isSameCategory: itemCategory === articleCategory
         };
-      })
-      .filter(({ item, sharedTagCount, isSameCategory }) => {
-        return !item.isAd && item.id !== article.id && isSameCategory && sharedTagCount > 0;
-      })
+      });
+
+    const sameThemeArticles = candidates
+      .filter(({ sharedTagCount, isSameCategory }) => isSameCategory && sharedTagCount > 0)
       .sort((a, b) => b.sharedTagCount - a.sharedTagCount)
+      .slice(0, 6)
+      .map(({ item }) => item);
+
+    const usedArticleIds = new Set(sameThemeArticles.map((item) => item.id));
+    const nextArticles = candidates
+      .filter(({ item, isSameCategory }) => isSameCategory && !usedArticleIds.has(item.id))
       .slice(0, 3)
       .map(({ item }) => item);
+
+    return {
+      nextArticles,
+      sameThemeArticles
+    };
   } catch {
-    return [];
+    return {
+      nextArticles: [],
+      sameThemeArticles: []
+    };
   }
 }
 
@@ -1022,10 +1031,11 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
   const bodyWithA8 = replaceA8Shortcodes(bodyWithHeadingIds);
   const { html: bodyWithFaq, faqItems } = replaceFaqShortcodes(bodyWithA8);
   const faqJsonLd = createFaqJsonLd(faqItems);
-  const [articleBlocks, relatedArticles] = await Promise.all([
+  const [articleBlocks, relatedArticleGroups] = await Promise.all([
     createArticleBlocks(bodyWithFaq),
     getRelatedArticlesSafely(article, articleCategory)
   ]);
+  const { nextArticles, sameThemeArticles } = relatedArticleGroups;
 
   return (
     <div className="page">
@@ -1125,7 +1135,7 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
               <h2 id="article-author-title" className="article-author-title">
                 記事作成者
               </h2>
-              <p className="article-author-name">幸田 あかり</p>
+              <p className="article-author-name"><Link href="/authors/akari">幸田 あかり</Link></p>
               <p>
                 日常の小さな不便や、暮らしの中で起きる困りごとを整理する実用メディアを運営しています。
               </p>
@@ -1136,12 +1146,33 @@ export default async function ArticleDetailPage({ params, searchParams }: Articl
                 公式情報だけでは分かりにくい、使ってから気づく違和感や、買う前に見落としやすい点を大切にしています。
               </p>
             </section>
-
-            {relatedArticles.length > 0 ? (
+            {nextArticles.length > 0 ? (
               <div className="related-box">
-                <h2 className="related-title">関連記事</h2>
+                <h2 className="related-title">次に読む</h2>
                 <div className="related-list">
-                  {relatedArticles.map((relatedArticle) => {
+                  {nextArticles.map((relatedArticle) => {
+                    const relatedCategory = getArticleCategory(relatedArticle);
+
+                    return (
+                      <Link
+                        key={relatedArticle.id}
+                        className="related-item"
+                        href={getArticlePath(relatedArticle)}
+                      >
+                        <span className="related-tag">{getCategoryDisplayName(relatedCategory)}</span>
+                        <div className="related-name">{relatedArticle.title}</div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {sameThemeArticles.length > 0 ? (
+              <div className="related-box">
+                <h2 className="related-title">同じテーマの記事</h2>
+                <div className="related-list">
+                  {sameThemeArticles.map((relatedArticle) => {
                     const relatedCategory = getArticleCategory(relatedArticle);
 
                     return (

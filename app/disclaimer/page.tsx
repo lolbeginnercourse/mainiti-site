@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Breadcrumbs } from "@/app/components/SiteChrome";
+import { Breadcrumbs, SiteFooter, SiteHeader } from "@/app/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: "免責事項",
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 export default function DisclaimerPage() {
   return (
     <div className="page">
+      <SiteHeader />
       <main className="article-page static-page">
         <Breadcrumbs items={[{ name: "免責事項", href: "/disclaimer" }]} />
 
@@ -47,6 +48,7 @@ export default function DisclaimerPage() {
           </div>
         </article>
       </main>
+      <SiteFooter />
     </div>
   );
 }

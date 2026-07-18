@@ -82,6 +82,7 @@ export const categories: Array<{
 
 export const siteInfoLinks = [
   { name: "運営者情報", href: "/about" },
+  { name: "広告掲載ポリシー", href: "/advertising-policy" },
   { name: "プライバシーポリシー", href: "/privacy" },
   { name: "免責事項", href: "/disclaimer" },
   { name: "お問い合わせ", href: "/contact" }
