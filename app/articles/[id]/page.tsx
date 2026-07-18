@@ -25,7 +25,7 @@ import {
 } from "@/src/libs/site-config";
 
 export const revalidate = 60;
-export const dynamic = "auto";
+export const dynamic = "force-dynamic";
 
 type ArticlePageProps = {
   params: { id: string } | Promise<{ id: string }>;
