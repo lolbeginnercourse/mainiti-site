@@ -19,6 +19,7 @@ import {
   SiteHeader
 } from "@/app/components/SiteChrome";
 import {
+  categories,
   categoryAliasMap,
   categoryBackground,
   categoryNames,
@@ -75,6 +76,14 @@ type ArticleWithCmsAliases = Article & {
 
 const ARTICLES_PER_PAGE = 8;
 
+const enabledCategoryKeys = categories
+  .map((category) => category.key)
+  .filter((key): key is MainCategory => key !== "top");
+
+function isEnabledCategory(category: MainCategory) {
+  return enabledCategoryKeys.includes(category);
+}
+
 const hiddenTags = new Set([
   "TOP",
   "top",
@@ -88,9 +97,9 @@ const hiddenTags = new Set([
 ]);
 
 export function generateStaticParams() {
-  return Object.entries(categorySlugMap)
-    .filter(([category]) => category !== "広告")
-    .map(([, slug]) => ({ slug }));
+  return enabledCategoryKeys.map((category) => ({
+    slug: categorySlugMap[category]
+  }));
 }
 
 export async function generateMetadata({
@@ -103,7 +112,7 @@ export async function generateMetadata({
   const hasFilterQuery = !!resolvedSearchParams.q?.trim() || !!resolvedSearchParams.tag?.trim() || !!resolvedSearchParams.sort?.trim();
   const pageNumber = parsePageNumber(resolvedSearchParams.page);
 
-  if (!selectedCategory || selectedCategory === "広告") {
+  if (!selectedCategory || selectedCategory === "広告" || !isEnabledCategory(selectedCategory)) {
     return {
       title: "カテゴリが見つかりません",
       robots: {
@@ -685,7 +694,7 @@ export default async function CategoryPage({
   const resolvedSearchParams = await Promise.resolve(searchParams || {});
   const selectedCategory = getCategoryFromSlug(resolvedParams.slug);
 
-  if (!selectedCategory || selectedCategory === "広告") {
+  if (!selectedCategory || selectedCategory === "広告" || !isEnabledCategory(selectedCategory)) {
     notFound();
   }
 

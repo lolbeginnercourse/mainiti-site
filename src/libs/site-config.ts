@@ -97,7 +97,7 @@ export const purposeLinks = [
   {
     name: "家事を少し楽にしたい",
     description: "掃除、洗濯、片づけの負担を減らす",
-    href: getCategoryHref("暮らし")
+    href: "/articles"
   },
   {
     name: "便利グッズを見直したい",

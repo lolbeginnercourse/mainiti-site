@@ -708,10 +708,12 @@ export default async function Home({ searchParams }: HomeProps) {
             ) : null}
 
             <h2 className="section-title">{title}</h2>
-            <div className="list-status">
-              <span>{totalArticles}件の記事</span>
-              {hasListFilter ? <span>{currentPage} / {totalPages}ページ</span> : null}
-            </div>
+            {hasListFilter ? (
+              <div className="list-status">
+                <span>{totalArticles}件の記事</span>
+                <span>{currentPage} / {totalPages}ページ</span>
+              </div>
+            ) : null}
 
             <SearchBox
               selectedTag={selectedTag}
