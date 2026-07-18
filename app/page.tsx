@@ -194,9 +194,6 @@ function getArticleCategory(article: ArticleWithCmsAliases): MainCategory {
   return getArticleCategories(article)[0];
 }
 
-function getArticleBodyText(article: ArticleWithCmsAliases) {
-  return article.body || article.content || "";
-}
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();

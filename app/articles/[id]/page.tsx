@@ -398,14 +398,33 @@ async function getRelatedArticlesSafely(
   articleCategory: MainCategory
 ) {
   try {
+    const sourceTags = getArticleTags(article);
+
+    if (sourceTags.length === 0) {
+      return [];
+    }
+
+    const sourceTagSet = new Set(sourceTags);
     const allArticles = await getCachedArticles();
 
     return allArticles
-      .filter((item) => {
+      .map((item) => {
         const itemCategory = getArticleCategory(item);
-        return !item.isAd && item.id !== article.id && itemCategory === articleCategory;
+        const itemTags = getArticleTags(item);
+        const sharedTagCount = itemTags.filter((tag) => sourceTagSet.has(tag)).length;
+
+        return {
+          item,
+          sharedTagCount,
+          isSameCategory: itemCategory === articleCategory
+        };
       })
-      .slice(0, 3);
+      .filter(({ item, sharedTagCount, isSameCategory }) => {
+        return !item.isAd && item.id !== article.id && isSameCategory && sharedTagCount > 0;
+      })
+      .sort((a, b) => b.sharedTagCount - a.sharedTagCount)
+      .slice(0, 3)
+      .map(({ item }) => item);
   } catch {
     return [];
   }
@@ -720,6 +739,7 @@ function stringifyJsonLd(value: unknown) {
 
 function parseArticleBlockInputs(html: string): ArticleBlockInput[] {
   const blockInputs: ArticleBlockInput[] = [];
+  const seenAmazonTargets = new Set<string>();
   const decodedHtml = decodeAmazonShortcodeText(html);
   const amazonRegex =
     /(?:<p[^>]*>\s*)?(?:<[^>]+>\s*)*(\[amazon[\s\S]*?\])\s*(?:<\/[^>]+>\s*)*(?:<\/p>)?/gi;
@@ -748,6 +768,14 @@ function parseArticleBlockInputs(html: string): ArticleBlockInput[] {
     const asinOrUrl = asin || amazonUrlAttr;
 
     if (asinOrUrl) {
+      const normalizedAmazonTarget = asinOrUrl.toLowerCase();
+
+      if (seenAmazonTargets.has(normalizedAmazonTarget)) {
+        lastIndex = amazonRegex.lastIndex;
+        continue;
+      }
+
+      seenAmazonTargets.add(normalizedAmazonTarget);
       blockInputs.push({
         type: "amazon-input",
         key: `${asinOrUrl}-${match.index}`,
