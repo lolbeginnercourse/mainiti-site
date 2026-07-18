@@ -77,17 +77,7 @@ export const categories: Array<{
   href: string;
 }> = [
   { name: "トップ", key: "top", href: "/" },
-  { name: getCategoryDisplayName("お金"), key: "お金", href: getCategoryHref("お金") },
-  {
-    name: getCategoryDisplayName("リラックス"),
-    key: "リラックス",
-    href: getCategoryHref("リラックス")
-  },
-  {
-    name: "ライフスタイル",
-    key: "ライフスタイル",
-    href: getCategoryHref("ライフスタイル")
-  }
+  { name: getCategoryDisplayName("お金"), key: "お金", href: getCategoryHref("お金") }
 ];
 
 export const siteInfoLinks = [
@@ -111,11 +101,6 @@ export const purposeLinks = [
   {
     name: "便利グッズを見直したい",
     description: "買う前に使う場面と保管場所を考える",
-    href: getCategoryHref("リラックス")
-  },
-  {
-    name: "暮らしの小さな不便を整理したい",
-    description: "日常で困りやすい原因と対策を見る",
-    href: getCategoryHref("ライフスタイル")
+    href: getCategoryHref("お金")
   }
 ];
