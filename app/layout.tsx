@@ -94,6 +94,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://images.microcms-assets.io" />
         <link rel="dns-prefetch" href="https://images.microcms-assets.io" />
+        <meta name="robots" content="max-image-preview:large" />
       </head>
       <body className="min-h-full flex flex-col">
         <script

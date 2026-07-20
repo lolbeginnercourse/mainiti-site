@@ -629,8 +629,30 @@ function getAmazonCardTitle(productTitle?: string, inputTitle?: string) {
   return DEFAULT_AMAZON_CARD_TITLE;
 }
 
+function isLikelyImageUrl(url?: string) {
+  if (!url || !isValidExternalUrl(url)) return false;
+
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+
+    if (hostname === "hb.afl.rakuten.co.jp") return false;
+    if (hostname === "item.rakuten.co.jp") return false;
+    if (hostname.includes("amazon.co.jp")) return false;
+
+    return (
+      /\.(?:jpg|jpeg|png|webp|gif|avif)(?:$|[?#])/i.test(url) ||
+      hostname === "m.media-amazon.com" ||
+      hostname === "images-na.ssl-images-amazon.com" ||
+      hostname === "images.microcms-assets.io"
+    );
+  } catch {
+    return false;
+  }
+}
+
 function getValidImageUrl(...urls: Array<string | undefined>) {
-  return urls.find((url) => isValidExternalUrl(url)) || "";
+  return urls.find((url) => isLikelyImageUrl(url)) || "";
 }
 
 function getAmazonFallbackProductUrl(asin?: string, amazonUrlAttr?: string) {
