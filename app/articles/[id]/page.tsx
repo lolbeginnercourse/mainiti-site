@@ -423,7 +423,11 @@ async function getRelatedArticlesSafely(
 
     const usedArticleIds = new Set(sameThemeArticles.map((item) => item.id));
     const nextArticles = candidates
-      .filter(({ item, isSameCategory }) => isSameCategory && !usedArticleIds.has(item.id))
+      .filter(
+        ({ item, isSameCategory, sharedTagCount }) =>
+          isSameCategory && sharedTagCount > 0 && !usedArticleIds.has(item.id)
+      )
+      .sort((a, b) => b.sharedTagCount - a.sharedTagCount)
       .slice(0, 3)
       .map(({ item }) => item);
 
